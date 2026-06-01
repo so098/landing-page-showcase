@@ -1,61 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
-  OrderInputSchema,
-  type OrderInput,
-  type Plan,
+  OrderFormSchema,
+  PURPOSES,
+  INFO_OPTIONS,
+  PAGE_OPTIONS,
+  BASE_PAGE,
+  ADDITIONAL_PAGE_PRICE,
+  MOODS,
+  MATERIAL_TYPES,
+  type Purpose,
 } from "@/lib/order";
 import { useShowcaseBySlug, useCategories } from "@/lib/queries";
 import PagePreview from "@/components/PagePreview";
-
-type PlanDef = {
-  id: Plan;
-  name: string;
-  price: number;
-  tagline: string;
-  features: string[];
-  featured?: boolean;
-};
-
-const PLAN_DEFS: PlanDef[] = [
-  {
-    id: "basic",
-    name: "베이직",
-    price: 490000,
-    tagline: "한 장으로 충분한 기본형",
-    features: ["기본 1페이지 제작", "선택한 디자인 적용", "문의 폼 연결", "7일 제작"],
-  },
-  {
-    id: "pro",
-    name: "프로",
-    price: 890000,
-    tagline: "검색·모바일까지 챙기는 실전형",
-    features: [
-      "반응형 최적화",
-      "SEO 기본 세팅",
-      "방문 분석 연동",
-      "콘텐츠 2회 수정",
-    ],
-    featured: true,
-  },
-  {
-    id: "premium",
-    name: "프리미엄",
-    price: 1490000,
-    tagline: "다국어·유지보수까지 한 번에",
-    features: [
-      "다국어 페이지(2개 언어)",
-      "3개월 유지보수",
-      "맞춤 애니메이션",
-      "우선 응대",
-    ],
-  },
-];
-
-const won = (n: number) => `${(n / 10000).toLocaleString("ko-KR")}만원`;
 
 export default function OrderPage() {
   const params = useParams<{ slug: string }>();
@@ -70,32 +30,81 @@ export default function OrderPage() {
     return cat?.label ?? showcase.category;
   }, [categoriesQuery.data, showcase]);
 
-  const [plan, setPlan] = useState<Plan>("pro");
-  const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
+  // ── 폼 상태 ──
+  const [form, setForm] = useState({
+    businessName: "",
+    phone: "",
+    email: "",
+    industry: "",
+    links: "",
+    targetProfile: "",
+    targetPain: "",
+    targetMessage: "",
+    targetHesitation: "",
+    avoidFeel: "",
+    referenceSites: "",
+    preferredColors: "",
+    copyText: "",
+  });
+  const [purpose, setPurpose] = useState<Purpose | null>(null);
+  const [selectedInfo, setSelectedInfo] = useState<string[]>([]);
+  const [infoContents, setInfoContents] = useState<Record<string, string>>({});
+  const [pages, setPages] = useState<string[]>([BASE_PAGE]);
+  const [moods, setMoods] = useState<string[]>([]);
+  const [hasBrandColors, setHasBrandColors] = useState<boolean | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  const selectedPlan = PLAN_DEFS.find((p) => p.id === plan)!;
+  // 업종은 선택한 쇼케이스의 카테고리로 미리 채움 (수정 가능)
+  useEffect(() => {
+    if (categoryLabel && !form.industry) {
+      setForm((f) => ({ ...f, industry: categoryLabel }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryLabel]);
+
+  const additionalPages = Math.max(0, pages.length - 1);
+  const additionalCost = additionalPages * ADDITIONAL_PAGE_PRICE;
 
   function update(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
     if (errors[field]) setErrors((e) => ({ ...e, [field]: "" }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function toggle(list: string[], value: string): string[] {
+    return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+  }
+
+  function handleSubmit() {
     if (!showcase) return;
 
-    const payload: OrderInput = {
+    const infoSections: Record<string, string> = {};
+    for (const key of selectedInfo) infoSections[key] = infoContents[key] ?? "";
+
+    const payload = {
       showcaseId: showcase.id,
-      plan,
-      name: form.name,
+      businessName: form.businessName,
       phone: form.phone,
       email: form.email,
-      message: form.message || undefined,
+      industry: form.industry,
+      links: form.links || undefined,
+      purpose: purpose as Purpose,
+      targetProfile: form.targetProfile || undefined,
+      targetPain: form.targetPain || undefined,
+      targetMessage: form.targetMessage || undefined,
+      targetHesitation: form.targetHesitation || undefined,
+      infoSections: selectedInfo.length > 0 ? infoSections : undefined,
+      pages,
+      moods: moods.length > 0 ? moods : undefined,
+      avoidFeel: form.avoidFeel || undefined,
+      referenceSites: form.referenceSites || undefined,
+      preferredColors: form.preferredColors || undefined,
+      hasBrandColors: hasBrandColors ?? undefined,
+      copyText: form.copyText || undefined,
     };
 
-    const result = OrderInputSchema.safeParse(payload);
+    const result = OrderFormSchema.safeParse(payload);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of result.error.issues) {
@@ -105,12 +114,16 @@ export default function OrderPage() {
         }
       }
       setErrors(fieldErrors);
+      // 첫 에러 위치로 스크롤
+      const firstKey = Object.keys(fieldErrors)[0];
+      document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
-    // API 연동은 다음 단계. 지금은 클라이언트 검증 후 완료 화면만 표시.
+    // API 연동(생성 파이프라인)은 다음 단계. 지금은 클라이언트 검증 후 완료 화면만 표시.
     setErrors({});
     setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -124,11 +137,11 @@ export default function OrderPage() {
             </svg>
           </span>
           <span className="font-display text-xl font-extrabold tracking-tight text-ink">
-            멜스튜디오<span className="text-crimson">.</span>
+            멜스튜디오
           </span>
         </Link>
         <Link
-          href="/#showcase"
+          href="/showcase"
           className="flex items-center gap-1.5 text-sm font-medium text-wine/60 transition-colors hover:text-crimson"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -149,7 +162,7 @@ export default function OrderPage() {
           <div className="py-24 text-center">
             <p className="text-wine/60">해당 디자인을 찾을 수 없어요.</p>
             <Link
-              href="/#showcase"
+              href="/showcase"
               className="mt-5 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-crimson"
             >
               쇼케이스 둘러보기
@@ -160,43 +173,44 @@ export default function OrderPage() {
           <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-rose/15 bg-cream p-10 text-center shadow-petal sm:p-14">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
               </svg>
             </div>
             <h1 className="mt-6 font-display text-2xl font-extrabold text-ink">
-              주문이 접수되었어요
+              랜딩페이지 생성이 시작되었어요
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-wine/70">
-              <strong className="text-crimson">{showcase.title}</strong> 디자인 ·{" "}
-              <strong className="text-crimson">{selectedPlan.name}</strong> 플랜으로 접수했어요.
+              <strong className="text-crimson">{showcase.title}</strong> 디자인을 바탕으로
+              주문서 내용에 맞춰 AI가 페이지를 만들고 있어요.
               <br />
-              담당자가 입력하신 연락처({form.phone})로 1영업일 내에 연락드릴게요.
+              <strong className="text-ink">3~5분</strong> 정도 걸려요. 완료되면{" "}
+              <strong className="text-crimson">{form.email}</strong> 이메일이나 카카오톡으로
+              알려드릴게요.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
-                href="/#showcase"
+                href="/showcase"
                 className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-crimson"
               >
                 다른 디자인 더 보기
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setSubmitted(false);
-                  setForm({ name: "", phone: "", email: "", message: "" });
-                }}
-                className="rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson"
-              >
-                다시 주문하기
-              </button>
             </div>
           </div>
         ) : (
           <>
-            {/* ── 선택한 쇼케이스 요약 ── */}
-            <section className="animate-fade-up overflow-hidden rounded-3xl border border-rose/15 bg-cream shadow-soft">
+            {/* ── 페이지 타이틀 ── */}
+            <div className="animate-fade-up text-center">
+              <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+                랜딩페이지 <span className="text-crimson">주문서</span>
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-wine/65">
+                작성해주신 내용을 바탕으로 AI가 선택하신 디자인에 맞춰 페이지를 만들어요.
+              </p>
+            </div>
+
+            {/* ── 선택한 디자인 ── */}
+            <section className="mt-10 animate-fade-up overflow-hidden rounded-3xl border border-rose/15 bg-cream shadow-soft">
               <div className="flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:p-6">
-                {/* 썸네일 */}
                 <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl border border-rose/15 bg-white shadow-soft sm:w-64">
                   <div className="flex items-center gap-1.5 border-b border-rose/10 bg-petalSoft/60 px-3 py-2">
                     <span className="h-2 w-2 rounded-full bg-rose/40" />
@@ -207,108 +221,45 @@ export default function OrderPage() {
                     <PagePreview item={showcase} variant="desktop" priority />
                   </div>
                 </div>
-                {/* 요약 정보 */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-rose-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
                       {categoryLabel}
                     </span>
-                    <span className="text-xs text-wine/40">{showcase.id}.com</span>
+                    <span className="text-xs text-wine/40">선택한 디자인</span>
                   </div>
-                  <h1 className="mt-2 font-display text-2xl font-extrabold text-ink sm:text-3xl">
+                  <h2 className="mt-2 font-display text-2xl font-extrabold text-ink sm:text-3xl">
                     {showcase.title}
-                  </h1>
+                  </h2>
                   <p className="mt-1.5 text-sm text-wine/65">{showcase.blurb}</p>
-                  <p className="mt-4 text-xs font-medium text-wine/50">
-                    이 디자인으로 랜딩페이지 제작을 주문합니다.
-                  </p>
                 </div>
               </div>
             </section>
 
-            {/* ── 플랜 선택 ── */}
-            <section className="mt-12">
-              <h2 className="font-display text-xl font-extrabold text-ink">플랜 선택</h2>
-              <p className="mt-1 text-sm text-wine/60">제작 범위에 맞는 플랜을 골라주세요.</p>
-
-              <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                {PLAN_DEFS.map((p) => {
-                  const active = plan === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPlan(p.id)}
-                      aria-pressed={active}
-                      className={`group relative flex flex-col rounded-2xl border p-5 text-left transition-all ${
-                        active
-                          ? "border-crimson bg-white shadow-petalHover ring-2 ring-crimson/30"
-                          : "border-rose/15 bg-cream shadow-soft hover:-translate-y-1 hover:border-rose/40 hover:shadow-petal"
-                      }`}
-                    >
-                      {p.featured && (
-                        <span className="absolute -top-2.5 left-5 rounded-full bg-sun px-2.5 py-0.5 text-[10px] font-bold text-ink shadow-sm">
-                          추천
-                        </span>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <span className="font-display text-lg font-bold text-ink">
-                          {p.name}
-                        </span>
-                        <span
-                          className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
-                            active ? "border-crimson bg-crimson" : "border-rose/30 bg-white"
-                          }`}
-                        >
-                          {active && (
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                          )}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-wine/55">{p.tagline}</p>
-                      <p className="mt-3 font-display text-2xl font-extrabold text-crimson">
-                        {won(p.price)}
-                      </p>
-                      <ul className="mt-4 flex flex-col gap-1.5">
-                        {p.features.map((f) => (
-                          <li key={f} className="flex items-start gap-1.5 text-xs text-wine/70">
-                            <svg className="mt-0.5 flex-shrink-0 text-rose" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* ── 주문 폼 ── */}
-            <section className="mt-12">
-              <h2 className="font-display text-xl font-extrabold text-ink">주문 정보</h2>
-              <p className="mt-1 text-sm text-wine/60">
-                연락처를 남겨주시면 담당자가 제작 상담을 도와드려요.
-              </p>
-
-              <form
-                onSubmit={handleSubmit}
-                noValidate
-                className="mt-5 rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8"
-              >
+            <div className="mt-12 flex flex-col gap-12">
+              {/* ── 1. 사장님 정보 ── */}
+              <FormSection no={1} title="사장님 정보를 작성해주세요">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field
-                    label="이름"
+                    id="field-businessName"
+                    label="업체명 (브랜드명)"
                     required
-                    error={errors.name}
-                    value={form.name}
-                    onChange={(v) => update("name", v)}
-                    placeholder="홍길동"
+                    error={errors.businessName}
+                    value={form.businessName}
+                    onChange={(v) => update("businessName", v)}
+                    placeholder="멜스튜디오"
                   />
                   <Field
+                    id="field-industry"
+                    label="업종"
+                    required
+                    error={errors.industry}
+                    value={form.industry}
+                    onChange={(v) => update("industry", v)}
+                    placeholder="카페·베이커리"
+                  />
+                  <Field
+                    id="field-phone"
                     label="연락처"
                     required
                     type="tel"
@@ -317,9 +268,8 @@ export default function OrderPage() {
                     onChange={(v) => update("phone", v)}
                     placeholder="010-1234-5678"
                   />
-                </div>
-                <div className="mt-5">
                   <Field
+                    id="field-email"
                     label="이메일"
                     required
                     type="email"
@@ -330,46 +280,294 @@ export default function OrderPage() {
                   />
                 </div>
                 <div className="mt-5">
-                  <label className="mb-1.5 block text-sm font-semibold text-ink">
-                    요청사항
-                    <span className="ml-1 text-xs font-normal text-wine/45">(선택)</span>
-                  </label>
-                  <textarea
-                    value={form.message}
-                    onChange={(e) => update("message", e.target.value)}
-                    rows={4}
-                    placeholder="원하시는 색상, 추가 페이지, 참고 사이트 등을 자유롭게 적어주세요."
-                    className={`w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
-                      errors.message
-                        ? "border-crimson focus:ring-crimson/30"
-                        : "border-rose/20 focus:border-rose focus:ring-rose/20"
-                    }`}
+                  <Field
+                    id="field-links"
+                    label="기존 홈페이지 · 참고 홈페이지 · SNS 링크"
+                    error={errors.links}
+                    value={form.links}
+                    onChange={(v) => update("links", v)}
+                    placeholder="https://instagram.com/mybrand, https://..."
                   />
-                  {errors.message && (
-                    <p className="mt-1.5 text-xs font-medium text-crimson">{errors.message}</p>
-                  )}
                 </div>
+              </FormSection>
 
-                {/* 요약 + 제출 */}
-                <div className="mt-7 flex flex-col gap-4 border-t border-rose/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm text-wine/65">
-                    <span className="font-semibold text-ink">{selectedPlan.name}</span> 플랜 ·{" "}
-                    <span className="font-display text-lg font-extrabold text-crimson">
-                      {won(selectedPlan.price)}
-                    </span>
+              {/* ── 2. 제작 목적 ── */}
+              <FormSection no={2} title="제작 목적은 무엇인가요?" error={errors.purpose}>
+                <div id="field-purpose" className="flex flex-wrap gap-2.5">
+                  {PURPOSES.map((p) => (
+                    <Chip
+                      key={p}
+                      label={p}
+                      active={purpose === p}
+                      onClick={() => {
+                        setPurpose(p);
+                        if (errors.purpose) setErrors((e) => ({ ...e, purpose: "" }));
+                      }}
+                    />
+                  ))}
+                </div>
+              </FormSection>
+
+              {/* ── 3. 타깃 고객 ── */}
+              <FormSection no={3} title="타깃으로 하는 고객이 누구인가요?">
+                <div className="flex flex-col gap-5">
+                  <Field
+                    id="field-targetProfile"
+                    label="주요 고객층 나이 / 성별 / 지역"
+                    value={form.targetProfile}
+                    onChange={(v) => update("targetProfile", v)}
+                    placeholder="20~30대 여성, 서울 마포구"
+                  />
+                  <TextArea
+                    label="고객이 가진 고민"
+                    value={form.targetPain}
+                    onChange={(v) => update("targetPain", v)}
+                    placeholder="예: 믿을 수 있는 곳을 찾기 어렵다, 가격이 불투명하다…"
+                    rows={2}
+                  />
+                  <TextArea
+                    label="고객이 이 페이지에서 알아야 할 것"
+                    value={form.targetMessage}
+                    onChange={(v) => update("targetMessage", v)}
+                    placeholder="예: 우리 서비스의 차별점, 예약 방법, 가격대…"
+                    rows={2}
+                  />
+                  <TextArea
+                    label="고객이 사용을 망설인다면 그 이유는 뭐라고 생각하시나요?"
+                    value={form.targetHesitation}
+                    onChange={(v) => update("targetHesitation", v)}
+                    placeholder="예: 후기가 없어서, 가격이 부담돼서…"
+                    rows={2}
+                  />
+                </div>
+              </FormSection>
+
+              {/* ── 4. 추가할 정보 ── */}
+              <FormSection
+                no={4}
+                title="어떤 정보를 추가할지 골라주세요"
+                subtitle="복수선택 — 선택한 항목의 내용을 작성해주세요"
+              >
+                <div className="flex flex-wrap gap-2.5">
+                  {INFO_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt}
+                      label={opt}
+                      active={selectedInfo.includes(opt)}
+                      onClick={() => setSelectedInfo((list) => toggle(list, opt))}
+                    />
+                  ))}
+                </div>
+                {selectedInfo.length > 0 && (
+                  <div className="mt-6 flex flex-col gap-5">
+                    {selectedInfo.map((opt) => (
+                      <TextArea
+                        key={opt}
+                        label={opt}
+                        value={infoContents[opt] ?? ""}
+                        onChange={(v) => setInfoContents((c) => ({ ...c, [opt]: v }))}
+                        placeholder={`${opt} 내용을 작성해주세요`}
+                        rows={2}
+                      />
+                    ))}
+                  </div>
+                )}
+              </FormSection>
+
+              {/* ── 5. 필수 페이지 ── */}
+              <FormSection
+                no={5}
+                title="필수 페이지를 골라주세요"
+                subtitle={`복수선택 — 기본 1페이지이며, 1페이지 추가 시 ${ADDITIONAL_PAGE_PRICE.toLocaleString("ko-KR")}원이 추가됩니다`}
+                error={errors.pages}
+              >
+                <div id="field-pages" className="flex flex-wrap gap-2.5">
+                  {PAGE_OPTIONS.map((p) => (
+                    <Chip
+                      key={p}
+                      label={p}
+                      active={pages.includes(p)}
+                      onClick={() => {
+                        setPages((list) => toggle(list, p));
+                        if (errors.pages) setErrors((e) => ({ ...e, pages: "" }));
+                      }}
+                    />
+                  ))}
+                </div>
+                {pages.length > 0 && (
+                  <p className="mt-4 text-sm text-wine/65">
+                    선택한 페이지 <strong className="text-ink">{pages.length}개</strong>
+                    {additionalPages > 0 && (
+                      <>
+                        {" "}
+                        · 추가 비용{" "}
+                        <strong className="font-display text-crimson">
+                          +{additionalCost.toLocaleString("ko-KR")}원
+                        </strong>
+                      </>
+                    )}
+                  </p>
+                )}
+              </FormSection>
+
+              {/* ── 6. 디자인 방향 ── */}
+              <FormSection
+                no={6}
+                title="원하는 디자인 방향이 있으신가요?"
+                subtitle="디자인은 위에서 선택한 쇼케이스를 기준으로 해요"
+              >
+                <p className="mb-2.5 text-sm font-semibold text-ink">원하는 분위기</p>
+                <div className="flex flex-wrap gap-2.5">
+                  {MOODS.map((m) => (
+                    <Chip
+                      key={m}
+                      label={m}
+                      active={moods.includes(m)}
+                      onClick={() => setMoods((list) => toggle(list, m))}
+                    />
+                  ))}
+                </div>
+                <div className="mt-6 flex flex-col gap-5">
+                  <Field
+                    id="field-avoidFeel"
+                    label="피하고 싶은 느낌"
+                    value={form.avoidFeel}
+                    onChange={(v) => update("avoidFeel", v)}
+                    placeholder="예: 너무 화려한, 차가운 느낌…"
+                  />
+                  <Field
+                    id="field-referenceSites"
+                    label="참고 사이트 / 이미지"
+                    value={form.referenceSites}
+                    onChange={(v) => update("referenceSites", v)}
+                    placeholder="https://..."
+                  />
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field
+                      id="field-preferredColors"
+                      label="원하는 컬러"
+                      value={form.preferredColors}
+                      onChange={(v) => update("preferredColors", v)}
+                      placeholder="예: 베이지, 딥그린"
+                    />
+                    <div>
+                      <p className="mb-1.5 block text-sm font-semibold text-ink">
+                        로고 / 브랜드 컬러 유무
+                      </p>
+                      <div className="flex gap-2.5">
+                        <Chip
+                          label="있어요"
+                          active={hasBrandColors === true}
+                          onClick={() => setHasBrandColors(true)}
+                        />
+                        <Chip
+                          label="없어요"
+                          active={hasBrandColors === false}
+                          onClick={() => setHasBrandColors(false)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* ── 7. 문구 작성 ── */}
+              <FormSection
+                no={7}
+                title="문구 작성"
+                subtitle="페이지에 꼭 들어가야 하는 문구가 있다면 적어주세요"
+              >
+                <TextArea
+                  value={form.copyText}
+                  onChange={(v) => update("copyText", v)}
+                  error={errors.copyText}
+                  placeholder="예: 슬로건, 인사말, 강조하고 싶은 한 줄…"
+                  rows={5}
+                />
+              </FormSection>
+
+              {/* ── 8. 자료 업로드 ── */}
+              <FormSection
+                no={8}
+                title="자료 업로드"
+                subtitle={MATERIAL_TYPES.join(" · ")}
+              >
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rose/30 bg-white/60 px-6 py-10 text-center transition-colors hover:border-rose hover:bg-white">
+                  <svg className="text-rose" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                  </svg>
+                  <span className="mt-3 text-sm font-semibold text-ink">
+                    파일을 선택하거나 끌어다 놓으세요
+                  </span>
+                  <span className="mt-1 text-xs text-wine/45">
+                    이미지, PDF, 문서 파일 (여러 개 선택 가능)
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      const picked = Array.from(e.target.files ?? []);
+                      if (picked.length > 0) setFiles((prev) => [...prev, ...picked]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {files.length > 0 && (
+                  <ul className="mt-4 flex flex-col gap-2">
+                    {files.map((f, i) => (
+                      <li
+                        key={`${f.name}-${i}`}
+                        className="flex items-center justify-between rounded-xl border border-rose/15 bg-white px-4 py-2.5 text-sm text-ink"
+                      >
+                        <span className="truncate">{f.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                          aria-label={`${f.name} 삭제`}
+                          className="ml-3 flex-shrink-0 text-wine/40 transition-colors hover:text-crimson"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                            <path d="M6 6l12 12M18 6L6 18" />
+                          </svg>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-3 text-xs text-wine/45">
+                  파일은 생성 시 참고 자료로 사용돼요. 부족한 자료는 완료 연락 시 추가로 요청드릴 수 있어요.
+                </p>
+              </FormSection>
+
+              {/* ── 생성하기 ── */}
+              <div className="rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm leading-relaxed text-wine/65">
+                    선택한 페이지 <strong className="text-ink">{pages.length}개</strong>
+                    {additionalPages > 0 && (
+                      <>
+                        {" "}
+                        · 추가 비용{" "}
+                        <strong className="font-display text-crimson">
+                          +{additionalCost.toLocaleString("ko-KR")}원
+                        </strong>
+                      </>
+                    )}
                   </div>
                   <button
-                    type="submit"
-                    className="rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+                    type="button"
+                    onClick={handleSubmit}
+                    className="rounded-full bg-rose-grad px-10 py-4 text-base font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
                   >
-                    주문 접수하기
+                    생성하기
                   </button>
                 </div>
-                <p className="mt-3 text-center text-xs text-wine/40 sm:text-right">
-                  지금은 결제 없이 접수만 진행돼요. 결제는 상담 후 안내드립니다.
+                <p className="mt-4 text-center text-xs leading-relaxed text-wine/45 sm:text-right">
+                  AI 생성은 <strong>3~5분</strong> 정도 걸려요. 완료되면 이메일이나 카카오톡으로 알려드릴게요.
                 </p>
-              </form>
-            </section>
+              </div>
+            </div>
           </>
         )}
       </main>
@@ -377,7 +575,68 @@ export default function OrderPage() {
   );
 }
 
+/* ── 폼 섹션 래퍼 ── */
+function FormSection({
+  no,
+  title,
+  subtitle,
+  error,
+  children,
+}: {
+  no: number;
+  title: string;
+  subtitle?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8">
+      <div className="flex items-start gap-3">
+        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-rose-grad font-display text-sm font-bold text-white">
+          {no}
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-extrabold leading-snug text-ink sm:text-xl">
+            {title}
+          </h2>
+          {subtitle && <p className="mt-1 text-xs text-wine/55 sm:text-sm">{subtitle}</p>}
+        </div>
+      </div>
+      {error && <p className="mt-3 text-xs font-medium text-crimson">{error}</p>}
+      <div className="mt-6">{children}</div>
+    </section>
+  );
+}
+
+/* ── 선택 칩 ── */
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+        active
+          ? "border-transparent bg-rose-grad text-white shadow-petal"
+          : "border-rose/20 bg-white/70 text-wine/70 hover:border-rose/50 hover:bg-white hover:text-crimson"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+/* ── 한 줄 입력 ── */
 function Field({
+  id,
   label,
   value,
   onChange,
@@ -386,6 +645,7 @@ function Field({
   required,
   type = "text",
 }: {
+  id?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
@@ -395,7 +655,7 @@ function Field({
   type?: string;
 }) {
   return (
-    <div>
+    <div id={id}>
       <label className="mb-1.5 block text-sm font-semibold text-ink">
         {label}
         {required && <span className="ml-0.5 text-crimson">*</span>}
@@ -407,6 +667,44 @@ function Field({
         placeholder={placeholder}
         aria-invalid={!!error}
         className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
+          error
+            ? "border-crimson focus:ring-crimson/30"
+            : "border-rose/20 focus:border-rose focus:ring-rose/20"
+        }`}
+      />
+      {error && <p className="mt-1.5 text-xs font-medium text-crimson">{error}</p>}
+    </div>
+  );
+}
+
+/* ── 여러 줄 입력 ── */
+function TextArea({
+  label,
+  value,
+  onChange,
+  placeholder,
+  error,
+  rows = 3,
+}: {
+  label?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  error?: string;
+  rows?: number;
+}) {
+  return (
+    <div>
+      {label && (
+        <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
+      )}
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+        placeholder={placeholder}
+        aria-invalid={!!error}
+        className={`w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
           error
             ? "border-crimson focus:ring-crimson/30"
             : "border-rose/20 focus:border-rose focus:ring-rose/20"
