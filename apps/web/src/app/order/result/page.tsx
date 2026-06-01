@@ -12,10 +12,11 @@ import {
   EDIT_LIMIT,
   type SavedOrderState,
 } from "@/lib/orderStorage";
+import { openChat } from "@/lib/chat";
 import SiteHeader from "@/components/SiteHeader";
 import PagePreview from "@/components/PagePreview";
 
-type ModalKind = null | "complete" | "editChoice" | "humanEdit" | "moreChoice";
+type ModalKind = null | "complete" | "editChoice" | "moreChoice";
 
 // 생성 결과 — 목(mock)으로 만들어진 랜딩페이지를 보여주고
 // 수정하기(AI/사람) / 추가로 만들기 / 이대로 완료하기로 이어지는 페이지.
@@ -222,13 +223,9 @@ export default function OrderResultPage() {
                       주문이 완료되었어요
                     </h2>
                     <p className="mt-4 text-sm leading-relaxed text-wine/70">
-                      도메인과 호스팅 연결 건으로
+                      도메인과 호스팅 연결은
                       <br />
-                      <strong className="text-crimson">{order.form.phone}</strong>으로
-                      연락드리겠습니다.
-                    </p>
-                    <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
-                      연락은 최대 2일 정도 소요될 수 있어요
+                      <strong className="text-crimson">채팅</strong>으로 바로 도와드릴게요.
                     </p>
                     <Link
                       href="/guide#faq"
@@ -240,9 +237,21 @@ export default function OrderResultPage() {
                       </svg>
                     </Link>
                     <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModal(null);
+                          openChat({
+                            greeting: `[이대로 완료하기]를 선택하셨습니다.\n${order.form.businessName} 페이지의 도메인·호스팅 연결을 도와드릴게요. 원하시는 도메인 주소가 있다면 말씀해 주세요!`,
+                          });
+                        }}
+                        className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                      >
+                        채팅으로 안내받기
+                      </button>
                       <Link
                         href="/"
-                        className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                        className="w-full rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson sm:w-auto"
                       >
                         홈으로 가기
                       </Link>
@@ -286,10 +295,17 @@ export default function OrderResultPage() {
                         </span>
                       </button>
 
-                      {/* 사람 수정 */}
+                      {/* 사람 수정 → 모달 닫고 채팅창 열기 */}
                       <button
                         type="button"
-                        onClick={() => spendEdit(() => setModal("humanEdit"))}
+                        onClick={() =>
+                          spendEdit(() => {
+                            setModal(null);
+                            openChat({
+                              greeting: `[수정하기]를 선택하셨습니다.\n${order.form.businessName} 페이지의 어떤 부분을 수정하고 싶으신지 말씀해 주세요. 담당자가 확인하는 대로 답장드릴게요 😊`,
+                            });
+                          })
+                        }
                         className="group flex flex-col rounded-2xl border border-rose/15 bg-white/70 p-6 text-left shadow-soft transition-all hover:-translate-y-1 hover:shadow-petal"
                       >
                         <span className="text-2xl">👤</span>
@@ -297,47 +313,14 @@ export default function OrderResultPage() {
                           사람에게 말해가며 수정하기
                         </span>
                         <span className="mt-2 flex-1 text-xs leading-relaxed text-wine/60">
-                          담당자와 이야기 나누며 꼼꼼하게 수정해요. 신청 시 최대 이틀 소요돼요.
+                          담당자와 채팅으로 이야기 나누며 꼼꼼하게 수정해요.
                         </span>
                         <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-wine/70 group-hover:text-crimson">
-                          수정 신청하기
+                          채팅으로 수정 요청하기
                           <svg className="transition-transform group-hover:translate-x-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
                           </svg>
                         </span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── 사람 수정 신청 완료 모달 ── */}
-                {modal === "humanEdit" && (
-                  <div className="relative z-10 w-full max-w-md animate-modal-in rounded-3xl border border-white/40 bg-cream p-8 text-center shadow-petalHover sm:p-10">
-                    <CloseX onClick={() => setModal(null)} />
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ink text-white shadow-petal">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                      </svg>
-                    </div>
-                    <h2 className="mt-6 font-display text-2xl font-extrabold text-ink">
-                      수정 신청이 접수되었어요
-                    </h2>
-                    <p className="mt-4 text-sm leading-relaxed text-wine/70">
-                      담당자가 수정 건으로
-                      <br />
-                      <strong className="text-crimson">{order.form.phone}</strong>으로
-                      연락드리겠습니다.
-                    </p>
-                    <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
-                      연락은 최대 2일 정도 소요될 수 있어요
-                    </p>
-                    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={() => setModal(null)}
-                        className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
-                      >
-                        확인
                       </button>
                     </div>
                   </div>

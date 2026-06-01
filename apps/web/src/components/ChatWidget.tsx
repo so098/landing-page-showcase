@@ -95,15 +95,25 @@ export default function ChatWidget() {
 
   // ── 외부에서 열기 (사람에게 주문/수정 등) ──
   useEffect(() => {
-    return subscribeOpenChat(async (initialMessage) => {
+    return subscribeOpenChat(async ({ greeting, customerMessage }) => {
       setOpen(true);
       setUnseen(0);
       const rid = roomId ?? (await joinRoom());
-      if (initialMessage) {
-        getSocket().emit("message:send", {
+      const socket = getSocket();
+      // 안내 메시지 ("[수정하기]를 선택하셨습니다" 등) — 상담 명의
+      if (greeting) {
+        socket.emit("message:send", {
+          roomId: rid,
+          senderType: "ADMIN",
+          body: greeting,
+        });
+      }
+      // 고객 명의 자동 메시지 (주문 요약 등)
+      if (customerMessage) {
+        socket.emit("message:send", {
           roomId: rid,
           senderType: "CUSTOMER",
-          body: initialMessage,
+          body: customerMessage,
         });
       }
     });

@@ -50,20 +50,24 @@ export async function fetchRooms() {
 }
 
 // ── 위젯 열기 (다른 컴포넌트에서 호출) ──
-// initialMessage가 있으면 위젯이 열리면서 자동으로 전송한다.
-export function openChat(initialMessage?: string): void {
+export type OpenChatOptions = {
+  // "[수정하기]를 선택하셨습니다" 같은 안내 메시지 — 관리자(상담) 명의로 자동 전송
+  greeting?: string;
+  // 고객 명의로 자동 전송할 메시지 (예: 주문 내용 요약)
+  customerMessage?: string;
+};
+
+export function openChat(options?: OpenChatOptions): void {
   if (typeof window === "undefined") return;
-  window.dispatchEvent(
-    new CustomEvent(OPEN_CHAT_EVENT, { detail: { initialMessage } }),
-  );
+  window.dispatchEvent(new CustomEvent(OPEN_CHAT_EVENT, { detail: options ?? {} }));
 }
 
 export function subscribeOpenChat(
-  callback: (initialMessage?: string) => void,
+  callback: (options: OpenChatOptions) => void,
 ): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = (e: Event) => {
-    callback((e as CustomEvent<{ initialMessage?: string }>).detail?.initialMessage);
+    callback((e as CustomEvent<OpenChatOptions>).detail ?? {});
   };
   window.addEventListener(OPEN_CHAT_EVENT, handler);
   return () => window.removeEventListener(OPEN_CHAT_EVENT, handler);

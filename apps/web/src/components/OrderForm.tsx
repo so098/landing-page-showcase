@@ -16,6 +16,7 @@ import {
   type Purpose,
 } from "@/lib/order";
 import { saveOrder, loadOrder } from "@/lib/orderStorage";
+import { openChat } from "@/lib/chat";
 import PagePreview from "./PagePreview";
 
 // 주문서 폼 — 쇼케이스(디자인)를 미리 골랐으면 showcase로 전달, 아니면 null.
@@ -158,8 +159,11 @@ export default function OrderForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     if (mode === "human") {
-      // 사람에게 주문하기 — 카톡 연락 안내 화면
+      // 사람에게 주문하기 — 접수 화면 + 채팅창 바로 열기
       setSubmitted(true);
+      openChat({
+        greeting: `[사람에게 주문하기]를 선택하셨습니다.\n${form.businessName}의 주문서를 확인했어요. 담당자와 채팅으로 이야기 나누며 함께 만들어 드릴게요. 편하게 말씀해 주세요 😊`,
+      });
       return;
     }
 
@@ -208,13 +212,24 @@ export default function OrderForm({
           <strong className="text-crimson">{form.businessName}</strong>의 랜딩페이지 주문서를
           잘 받았어요.
           <br />
-          담당자가 <strong className="text-ink">가능한 시간에 카카오톡</strong>으로 연락드려서
-          이야기 나누며 함께 만들어 드릴게요.
+          오른쪽 아래 <strong className="text-ink">채팅</strong>에서 담당자와 바로 이야기하며
+          함께 만들 수 있어요.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() =>
+              openChat({
+                greeting: `[사람에게 주문하기]를 선택하셨습니다.\n${form.businessName}의 주문서를 확인했어요. 담당자와 채팅으로 이야기 나누며 함께 만들어 드릴게요. 편하게 말씀해 주세요 😊`,
+              })
+            }
+            className="rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+          >
+            채팅 열기
+          </button>
           <Link
             href="/showcase"
-            className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-crimson"
+            className="rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson"
           >
             다른 디자인 더 보기
           </Link>
