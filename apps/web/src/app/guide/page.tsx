@@ -121,6 +121,71 @@ export default function GuidePage() {
         </p>
       </section>
 
+      {/* ── 공지사항 (아코디언) ── */}
+      <section id="faq" className="mx-auto max-w-3xl scroll-mt-10 px-5 pb-16">
+        <h2 className="text-center font-display text-2xl font-extrabold text-ink sm:text-3xl">
+          공지사항
+        </h2>
+        <p className="mt-2 text-center text-sm text-wine/60">
+          자주 묻는 내용을 모았어요. 항목을 누르면 펼쳐져요.
+        </p>
+
+        <div className="mt-8 flex flex-col gap-3">
+          <Accordion title="도메인과 호스팅이란?" defaultOpen>
+            <p>
+              <strong className="text-ink">도메인</strong>은 내 웹사이트의 인터넷 주소예요.
+              예를 들어 <span className="font-semibold text-crimson">dalkom-bakery.com</span>{" "}
+              같은 주소를 말해요. 고객이 이 주소를 입력하면 내 랜딩페이지로 들어올 수 있어요.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">호스팅</strong>은 만들어진 랜딩페이지를 인터넷에
+              올려두는 서버 공간이에요. 호스팅이 있어야 24시간 누구나 내 페이지에 접속할 수
+              있어요.
+            </p>
+            <p className="mt-3">
+              멜스튜디오는 페이지 생성이 완료되면 <strong className="text-ink">개별 연락</strong>을
+              드려서 도메인 구입부터 호스팅 연결까지 함께 도와드려요. 어려운 과정은 저희가 다
+              처리해 드리니 걱정하지 않으셔도 돼요.
+            </p>
+          </Accordion>
+
+          <Accordion title="제작 기간은 얼마나 걸리나요?">
+            <p>
+              <strong className="text-ink">AI 제작</strong>은 주문서 작성 후 3~5분이면 완성돼요.
+              <br />
+              <strong className="text-ink">사람과 함께 만들기</strong>는 카카오톡 상담 후 보통
+              3~7일 정도 걸려요.
+            </p>
+            <p className="mt-3">
+              완성 후 도메인·호스팅 연결 연락은 <strong className="text-ink">최대 2일</strong> 안에
+              드려요.
+            </p>
+          </Accordion>
+
+          <Accordion title="수정은 어떻게 하나요?">
+            <p>
+              생성된 페이지의 결과 화면에서 <strong className="text-ink">수정하기</strong>를 누르면
+              두 가지 방법 중 고를 수 있어요.
+            </p>
+            <p className="mt-3">
+              🤖 <strong className="text-ink">AI 수정</strong> — 수정할 부분을 고르고 AI에게 직접
+              말하면 2~3분 안에 반영돼요.
+              <br />
+              👤 <strong className="text-ink">사람 수정</strong> — 담당자가 연락드려 함께 수정해요
+              (최대 이틀 소요).
+            </p>
+          </Accordion>
+
+          <Accordion title="결제는 어떻게 하나요?">
+            <p>
+              지금은 주문서 접수 후 <strong className="text-ink">개별 연락</strong>을 드릴 때 결제
+              안내를 함께 드려요. 첫 페이지 10,000원, 추가 제작은 AI 50,000원 / 사람과 함께
+              300,000원이에요.
+            </p>
+          </Accordion>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="mx-auto max-w-3xl px-5 pb-28 text-center">
         <div className="rounded-3xl border border-rose/15 bg-cream p-8 shadow-soft sm:p-12">
@@ -147,6 +212,36 @@ export default function GuidePage() {
         </div>
       </section>
     </div>
+  );
+}
+
+/* ── 공지사항 아코디언 ── */
+function Accordion({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group rounded-2xl border border-rose/15 bg-cream shadow-soft transition-shadow open:shadow-petal"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-5 [&::-webkit-details-marker]:hidden">
+        <span className="font-display text-base font-bold text-ink sm:text-lg">{title}</span>
+        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-rose/20 bg-white text-wine/60 transition-transform duration-300 group-open:rotate-180 group-open:border-rose group-open:text-crimson">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </summary>
+      <div className="border-t border-rose/10 px-6 py-5 text-sm leading-relaxed text-wine/70">
+        {children}
+      </div>
+    </details>
   );
 }
 
