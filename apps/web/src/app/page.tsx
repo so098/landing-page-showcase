@@ -1,55 +1,40 @@
-"use client";
-
-import { useMemo, useState } from "react";
 import type { Category, Showcase } from "@melstudio/shared";
-import { useCategories, useAllShowcases } from "@/lib/queries";
+import { fetchCategories, fetchShowcases } from "@/lib/api";
 import SiteHeader from "@/components/SiteHeader";
-import TagBar from "@/components/TagBar";
-import ShowcaseGrid from "@/components/ShowcaseGrid";
-import PreviewModal from "@/components/PreviewModal";
+import HomeShowcaseSection from "@/components/HomeShowcaseSection";
 
-export default function Home() {
-  const [active, setActive] = useState<string>("all");
-  const [selected, setSelected] = useState<Showcase | null>(null);
+// ── 렌더링 전략: ISR (60초) ──
+// 쇼케이스는 관리자만 추가하고 모든 방문자에게 같은 내용이므로,
+// 정적 생성의 속도 + 주기 재생성의 신선도를 갖는 ISR이 최적.
+// 히어로/통계/푸터는 서버에서 렌더되고, 필터/슬라이더/모달만 클라이언트 섬으로 하이드레이트된다.
+export const revalidate = 60;
 
-  const categoriesQuery = useCategories();
-  const showcasesQuery = useAllShowcases();
+async function loadHomeData(): Promise<{
+  categories: Category[];
+  showcases: Showcase[];
+  apiDown: boolean;
+}> {
+  try {
+    const [categories, list] = await Promise.all([
+      fetchCategories({ next: { revalidate: 60 } }),
+      fetchShowcases({ limit: 100 }, { next: { revalidate: 60 } }),
+    ]);
+    return { categories, showcases: list.items, apiDown: false };
+  } catch {
+    // 빌드/재생성 시점에 API가 꺼져 있으면 빈 데이터로 렌더 (다음 재생성 때 복구)
+    return { categories: [], showcases: [], apiDown: true };
+  }
+}
 
-  const showcases = useMemo(
-    () => showcasesQuery.data?.items ?? [],
-    [showcasesQuery.data],
-  );
-
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: showcases.length };
-    for (const s of showcases) c[s.category] = (c[s.category] ?? 0) + 1;
-    return c;
-  }, [showcases]);
-
-  const tabs: Category[] = useMemo(
-    () => [{ id: "all", label: "전체" }, ...(categoriesQuery.data ?? [])],
-    [categoriesQuery.data],
-  );
-
-  const labelOf = useMemo(() => {
-    const m = new Map(tabs.map((t) => [t.id, t.label]));
-    return (slug: string) => m.get(slug) ?? slug;
-  }, [tabs]);
-
-  const filtered = useMemo(
-    () => (active === "all" ? showcases : showcases.filter((s) => s.category === active)),
-    [active, showcases],
-  );
-
-  const isLoading = categoriesQuery.isLoading || showcasesQuery.isLoading;
-  const isError = categoriesQuery.isError || showcasesQuery.isError;
+export default async function Home() {
+  const { categories, showcases, apiDown } = await loadHomeData();
 
   return (
     <div className="relative z-10 min-h-screen">
       {/* ── 헤더 ── */}
       <SiteHeader />
 
-      {/* ── 히어로 ── */}
+      {/* ── 히어로 (서버 렌더 — 데이터가 HTML에 포함됨) ── */}
       <section className="mx-auto max-w-6xl px-5 pb-10 pt-10 text-center sm:pt-16">
         <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-rose/20 bg-white/70 px-4 py-1.5 text-xs font-semibold text-crimson-deep shadow-soft">
           <span className="h-2 w-2 animate-float rounded-full bg-sun shadow-[0_0_8px_rgba(244,168,44,0.6)]" />
@@ -87,34 +72,23 @@ export default function Home() {
           <span className="h-4 w-px bg-rose/20" />
           <span>
             <strong className="font-display text-lg font-bold text-crimson">
-              {Math.max(0, tabs.length - 1)}
+              {categories.length}
             </strong>{" "}
             개 업종
           </span>
         </div>
       </section>
 
-      {/* ── 태그 + 쇼케이스 ── */}
-      <section
-        id="showcase"
-        className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24"
-      >
-        <div className="sticky top-0 z-30 -mx-5 mb-10 bg-blush/70 px-5 py-4 backdrop-blur-md">
-          <TagBar categories={tabs} counts={counts} active={active} onChange={setActive} />
-        </div>
-
-        {isError ? (
-          <p className="py-24 text-center text-wine/60">
-            데이터를 불러오지 못했어요. API 서버(4000)가 켜져 있는지 확인해 주세요.
-          </p>
-        ) : isLoading ? (
-          <p className="py-24 text-center text-wine/50">불러오는 중…</p>
-        ) : (
-          <ShowcaseGrid items={filtered} labelOf={labelOf} onOpen={setSelected} />
-        )}
+      {/* ── 태그 + 쇼케이스 (클라이언트 섬) ── */}
+      <section id="showcase" className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24">
+        <HomeShowcaseSection
+          categories={categories}
+          showcases={showcases}
+          apiDown={apiDown}
+        />
       </section>
 
-      {/* ── 푸터 ── */}
+      {/* ── 푸터 (서버 렌더) ── */}
       <footer className="border-t border-rose/10 bg-cream/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-wine/50 sm:flex-row">
           <div className="flex items-center gap-2">
@@ -128,13 +102,6 @@ export default function Home() {
           <p>© 2026 멜스튜디오. 업종별 랜딩페이지 쇼케이스.</p>
         </div>
       </footer>
-
-      {/* ── 미리보기 모달 ── */}
-      <PreviewModal
-        item={selected}
-        categoryLabel={selected ? labelOf(selected.category) : ""}
-        onClose={() => setSelected(null)}
-      />
     </div>
   );
 }

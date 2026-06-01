@@ -1,9 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
-// 이용 안내 — 서비스 흐름을 그림(단계 + 비교 카드)으로 설명하는 페이지
+// 이용 안내 — 서비스 흐름을 그림(단계 + 비교 카드)으로 설명하는 페이지.
+// 인터랙션이 없는 콘텐츠라 서버 컴포넌트(완전 정적, SSG)로 렌더한다.
+// 헤더/채팅 위젯 같은 클라이언트 섬(island)만 클라이언트에서 하이드레이트된다.
 export default function GuidePage() {
   return (
     <div className="relative z-10 min-h-screen">
