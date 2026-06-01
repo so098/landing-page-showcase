@@ -145,7 +145,7 @@ export default function OrderEditPage() {
                     </span>
                   </div>
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-white">
-                    <PagePreview item={generated} variant="desktop" priority />
+                    <PagePreview item={generated} variant="desktop" priority interactive />
                   </div>
                 </div>
                 <p className="mt-3 text-center text-xs text-wine/45">

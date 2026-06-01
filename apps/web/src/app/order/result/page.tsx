@@ -118,7 +118,7 @@ export default function OrderResultPage() {
                       </span>
                     </div>
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-white">
-                      <PagePreview item={generated} variant="desktop" priority />
+                      <PagePreview item={generated} variant="desktop" priority interactive />
                     </div>
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export default function OrderResultPage() {
                   <div className="relative w-[200px] rounded-[2rem] border-[6px] border-ink bg-ink p-0 shadow-petal">
                     <div className="absolute left-1/2 top-2 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-white/20" />
                     <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[1.5rem] bg-white">
-                      <PagePreview item={generated} variant="mobile" />
+                      <PagePreview item={generated} variant="mobile" interactive />
                     </div>
                   </div>
                 </div>
