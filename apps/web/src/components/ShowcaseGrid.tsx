@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Showcase } from "@/data/showcase";
+import type { Showcase } from "@melstudio/shared";
 import ShowcaseCard from "./ShowcaseCard";
 
 const PAGE_SIZE = 5;
@@ -38,9 +38,11 @@ function Arrow({
 
 export default function ShowcaseGrid({
   items,
+  labelOf,
   onOpen,
 }: {
   items: Showcase[];
+  labelOf: (categorySlug: string) => string;
   onOpen: (item: Showcase) => void;
 }) {
   const [page, setPage] = useState(0);
@@ -93,7 +95,13 @@ export default function ShowcaseGrid({
         className="grid grid-cols-2 gap-5 animate-slide-in sm:grid-cols-3 lg:grid-cols-5"
       >
         {current.map((item, i) => (
-          <ShowcaseCard key={item.id} item={item} index={i} onOpen={onOpen} />
+          <ShowcaseCard
+            key={item.id}
+            item={item}
+            index={i}
+            categoryLabel={labelOf(item.category)}
+            onOpen={onOpen}
+          />
         ))}
       </div>
 

@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import type { Showcase } from "@/data/showcase";
-import { CATEGORIES } from "@/data/showcase";
+import type { Showcase } from "@melstudio/shared";
 import PagePreview from "./PagePreview";
-
-function categoryLabel(id: string) {
-  return CATEGORIES.find((c) => c.id === id)?.label ?? id;
-}
 
 export default function PreviewModal({
   item,
+  categoryLabel,
   onClose,
 }: {
   item: Showcase | null;
+  categoryLabel: string;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -54,7 +51,7 @@ export default function PreviewModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-rose-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                {categoryLabel(item.category)}
+                {categoryLabel}
               </span>
               <span className="text-xs text-wine/40">{item.id}.com</span>
             </div>

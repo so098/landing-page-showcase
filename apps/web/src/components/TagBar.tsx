@@ -1,18 +1,21 @@
 "use client";
 
-import { CATEGORIES, countByCategory } from "@/data/showcase";
-import type { CategoryId } from "@/data/showcase";
+import type { Category } from "@melstudio/shared";
 
 export default function TagBar({
+  categories,
+  counts,
   active,
   onChange,
 }: {
-  active: CategoryId;
-  onChange: (id: CategoryId) => void;
+  categories: Category[]; // "all" 포함(페이지에서 앞에 추가해 전달)
+  counts: Record<string, number>;
+  active: string;
+  onChange: (id: string) => void;
 }) {
   return (
     <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 py-1 md:flex-wrap md:justify-center md:overflow-visible">
-      {CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const isActive = cat.id === active;
         return (
           <button
@@ -31,7 +34,7 @@ export default function TagBar({
                 isActive ? "bg-white/25 text-white" : "bg-petal/50 text-crimson-deep"
               }`}
             >
-              {countByCategory(cat.id)}
+              {counts[cat.id] ?? 0}
             </span>
           </button>
         );

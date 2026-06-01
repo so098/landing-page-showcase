@@ -1,20 +1,17 @@
 "use client";
 
-import type { Showcase } from "@/data/showcase";
-import { CATEGORIES } from "@/data/showcase";
+import type { Showcase } from "@melstudio/shared";
 import PagePreview from "./PagePreview";
-
-function categoryLabel(id: string) {
-  return CATEGORIES.find((c) => c.id === id)?.label ?? id;
-}
 
 export default function ShowcaseCard({
   item,
   index,
+  categoryLabel,
   onOpen,
 }: {
   item: Showcase;
   index: number;
+  categoryLabel: string;
   onOpen: (item: Showcase) => void;
 }) {
   return (
@@ -53,7 +50,7 @@ export default function ShowcaseCard({
       <div className="mt-3 px-0.5">
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-petal/60 px-2 py-0.5 text-[10px] font-semibold text-crimson-deep">
-            {categoryLabel(item.category)}
+            {categoryLabel}
           </span>
         </div>
         <h3 className="mt-1.5 font-display text-base font-bold leading-snug text-ink transition-colors group-hover:text-crimson">

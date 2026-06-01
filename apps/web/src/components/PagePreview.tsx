@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Showcase } from "@/data/showcase";
+import type { Showcase } from "@melstudio/shared";
 import PlaceholderMock from "./PlaceholderMock";
 
 // 실제 스크린샷 경로가 있으면 <Image>, 없으면 미니 목업 플레이스홀더를 렌더.

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { Showcase } from "@/data/showcase";
+import type { Showcase } from "@melstudio/shared";
 
 // 실제 스크린샷이 없을 때 렌더되는 "미니 랜딩페이지" 목업.
 // 컨테이너 쿼리(cqw) 단위를 사용해 카드 썸네일 / 모달 큰 화면 어디서든

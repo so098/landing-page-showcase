@@ -1,23 +1,47 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SHOWCASES } from "@/data/showcase";
-import type { CategoryId, Showcase } from "@/data/showcase";
+import type { Category, Showcase } from "@melstudio/shared";
+import { useCategories, useAllShowcases } from "@/lib/queries";
 import TagBar from "@/components/TagBar";
 import ShowcaseGrid from "@/components/ShowcaseGrid";
 import PreviewModal from "@/components/PreviewModal";
 
 export default function Home() {
-  const [active, setActive] = useState<CategoryId>("all");
+  const [active, setActive] = useState<string>("all");
   const [selected, setSelected] = useState<Showcase | null>(null);
 
-  const filtered = useMemo(
-    () =>
-      active === "all"
-        ? SHOWCASES
-        : SHOWCASES.filter((s) => s.category === active),
-    [active],
+  const categoriesQuery = useCategories();
+  const showcasesQuery = useAllShowcases();
+
+  const showcases = useMemo(
+    () => showcasesQuery.data?.items ?? [],
+    [showcasesQuery.data],
   );
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: showcases.length };
+    for (const s of showcases) c[s.category] = (c[s.category] ?? 0) + 1;
+    return c;
+  }, [showcases]);
+
+  const tabs: Category[] = useMemo(
+    () => [{ id: "all", label: "전체" }, ...(categoriesQuery.data ?? [])],
+    [categoriesQuery.data],
+  );
+
+  const labelOf = useMemo(() => {
+    const m = new Map(tabs.map((t) => [t.id, t.label]));
+    return (slug: string) => m.get(slug) ?? slug;
+  }, [tabs]);
+
+  const filtered = useMemo(
+    () => (active === "all" ? showcases : showcases.filter((s) => s.category === active)),
+    [active, showcases],
+  );
+
+  const isLoading = categoriesQuery.isLoading || showcasesQuery.isLoading;
+  const isError = categoriesQuery.isError || showcasesQuery.isError;
 
   return (
     <div className="relative z-10 min-h-screen">
@@ -80,13 +104,15 @@ export default function Home() {
         >
           <span>
             <strong className="font-display text-lg font-bold text-crimson">
-              {SHOWCASES.length}
+              {showcases.length}
             </strong>{" "}
             개의 디자인
           </span>
           <span className="h-4 w-px bg-rose/20" />
           <span>
-            <strong className="font-display text-lg font-bold text-crimson">8</strong>{" "}
+            <strong className="font-display text-lg font-bold text-crimson">
+              {Math.max(0, tabs.length - 1)}
+            </strong>{" "}
             개 업종
           </span>
         </div>
@@ -98,10 +124,18 @@ export default function Home() {
         className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-24"
       >
         <div className="sticky top-0 z-30 -mx-5 mb-10 bg-blush/70 px-5 py-4 backdrop-blur-md">
-          <TagBar active={active} onChange={setActive} />
+          <TagBar categories={tabs} counts={counts} active={active} onChange={setActive} />
         </div>
 
-        <ShowcaseGrid items={filtered} onOpen={setSelected} />
+        {isError ? (
+          <p className="py-24 text-center text-wine/60">
+            데이터를 불러오지 못했어요. API 서버(4000)가 켜져 있는지 확인해 주세요.
+          </p>
+        ) : isLoading ? (
+          <p className="py-24 text-center text-wine/50">불러오는 중…</p>
+        ) : (
+          <ShowcaseGrid items={filtered} labelOf={labelOf} onOpen={setSelected} />
+        )}
       </section>
 
       {/* ── 푸터 ── */}
@@ -120,7 +154,11 @@ export default function Home() {
       </footer>
 
       {/* ── 미리보기 모달 ── */}
-      <PreviewModal item={selected} onClose={() => setSelected(null)} />
+      <PreviewModal
+        item={selected}
+        categoryLabel={selected ? labelOf(selected.category) : ""}
+        onClose={() => setSelected(null)}
+      />
     </div>
   );
 }
