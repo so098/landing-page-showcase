@@ -11,7 +11,7 @@ npm-workspaces 모노레포.
 ```bash
 cp .env.example apps/api/.env   # 최초 1회
 npm install                     # 최초 1회
-npm run setup                   # 최초 1회: Docker 대기 → 마이그레이션 → 시드(8 + 39)
+npm run setup                   # 최초 1회: Docker 대기 → 마이그레이션 → 시드(8 + 159)
 npm start                       # 매일: Docker 기동 + api(4000)·web(3000) 동시 실행
 ```
 
@@ -36,6 +36,7 @@ npm test
 ## 진행 로드맵
 
 - [x] ① 데이터 토대 (DB + API)
-- [ ] ② 갤러리 + 클라우드 스토리지(MinIO) + 가상화 무한스크롤
-- [ ] ③ 주문 + 결제(PortOne) + 소셜로그인(카카오·구글·네이버)
+- [x] ②-a 쇼케이스 무한스크롤 페이지 (/showcase)
+- [ ] ②-b 클라우드 스토리지(MinIO) 이미지 + 가상화
+- [ ] ③ 주문 + 결제(PortOne) + 소셜로그인(카카오·구글·네이버) — 주문 페이지 UI(/order/[slug])는 완료
 - [ ] ④ 실시간 채팅(Socket.IO)
