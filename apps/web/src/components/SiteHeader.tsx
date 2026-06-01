@@ -20,7 +20,7 @@ export default function SiteHeader() {
           쇼케이스
         </Link>
         <Link
-          href="/showcase"
+          href="/order"
           className="rounded-full bg-ink px-4 py-2 text-white transition-all hover:bg-crimson"
         >
           주문하기
