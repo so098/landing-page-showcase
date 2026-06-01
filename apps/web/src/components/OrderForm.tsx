@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Showcase } from "@melstudio/shared";
 import {
   OrderFormSchema,
@@ -14,16 +15,24 @@ import {
   MATERIAL_TYPES,
   type Purpose,
 } from "@/lib/order";
+import { saveOrder, loadOrder } from "@/lib/orderStorage";
 import PagePreview from "./PagePreview";
 
 // 주문서 폼 — 쇼케이스(디자인)를 미리 골랐으면 showcase로 전달, 아니면 null.
+// mode: "ai" = 생성하기(목 생성 → 결과 페이지), "human" = 사람에게 주문하기(카톡 연락 안내)
+// restore: true면 이전에 저장된 주문서 내용을 불러와 수정 모드로 시작
 export default function OrderForm({
   showcase,
   categoryLabel,
+  mode = "ai",
+  restore = false,
 }: {
   showcase: Showcase | null;
   categoryLabel: string;
+  mode?: "ai" | "human";
+  restore?: boolean;
 }) {
+  const router = useRouter();
   // ── 폼 상태 ──
   const [form, setForm] = useState({
     businessName: "",
@@ -49,6 +58,21 @@ export default function OrderForm({
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  // 수정 모드: 저장된 주문서 내용 복원
+  useEffect(() => {
+    if (!restore) return;
+    const saved = loadOrder();
+    if (!saved) return;
+    setForm(saved.form);
+    setPurpose((saved.purpose as Purpose) ?? null);
+    setSelectedInfo(saved.selectedInfo);
+    setInfoContents(saved.infoContents);
+    setPages(saved.pages.length > 0 ? saved.pages : [BASE_PAGE]);
+    setMoods(saved.moods);
+    setHasBrandColors(saved.hasBrandColors);
+  }, [restore]);
 
   // 업종은 선택한 쇼케이스의 카테고리로 미리 채움 (수정 가능)
   useEffect(() => {
@@ -114,37 +138,73 @@ export default function OrderForm({
       return;
     }
 
-    // API 연동(생성 파이프라인)은 다음 단계. 지금은 클라이언트 검증 후 완료 화면만 표시.
+    // 검증 통과 → 주문서 내용 저장 (결과 페이지/수정하기에서 사용)
     setErrors({});
-    setSubmitted(true);
+    saveOrder({
+      showcaseId: showcase?.id,
+      form,
+      purpose,
+      selectedInfo,
+      infoContents,
+      pages,
+      moods,
+      hasBrandColors,
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (mode === "human") {
+      // 사람에게 주문하기 — 카톡 연락 안내 화면
+      setSubmitted(true);
+      return;
+    }
+
+    // AI 생성(목): 잠시 생성 중 화면을 보여준 뒤 결과 페이지로 이동
+    setGenerating(true);
+    setTimeout(() => {
+      router.push("/order/result");
+    }, 2800);
   }
 
+  /* ── 생성 중 화면 (목) ── */
+  if (generating) {
+    return (
+      <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-rose/15 bg-cream p-10 text-center shadow-petal sm:p-14">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
+          <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
+        </div>
+        <h1 className="mt-6 font-display text-2xl font-extrabold text-ink">
+          AI가 랜딩페이지를 만들고 있어요
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-wine/70">
+          <strong className="text-crimson">{form.businessName}</strong>의 랜딩페이지를 생성 중이에요.
+          <br />
+          잠시만 기다려 주세요…
+        </p>
+        <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-rose/15">
+          <div className="h-full w-2/3 animate-pulse rounded-full bg-rose-grad" />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── 완료 화면 (사람에게 주문하기) ── */
   if (submitted) {
     return (
-      /* ── 완료 화면 ── */
       <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-rose/15 bg-cream p-10 text-center shadow-petal sm:p-14">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            <path d="M20 6L9 17l-5-5" />
           </svg>
         </div>
         <h1 className="mt-6 font-display text-2xl font-extrabold text-ink">
-          랜딩페이지 생성이 시작되었어요
+          주문이 접수되었어요
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-wine/70">
-          {showcase ? (
-            <>
-              <strong className="text-crimson">{showcase.title}</strong> 디자인을 바탕으로
-              주문서 내용에 맞춰 AI가 페이지를 만들고 있어요.
-            </>
-          ) : (
-            <>주문서 내용에 맞춰 AI가 페이지를 만들고 있어요.</>
-          )}
+          <strong className="text-crimson">{form.businessName}</strong>의 랜딩페이지 주문서를
+          잘 받았어요.
           <br />
-          <strong className="text-ink">3~5분</strong> 정도 걸려요. 완료되면{" "}
-          <strong className="text-crimson">{form.email}</strong> 이메일이나 카카오톡으로
-          알려드릴게요.
+          담당자가 <strong className="text-ink">가능한 시간에 카카오톡</strong>으로 연락드려서
+          이야기 나누며 함께 만들어 드릴게요.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
@@ -537,11 +597,17 @@ export default function OrderForm({
               onClick={handleSubmit}
               className="rounded-full bg-rose-grad px-10 py-4 text-base font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
             >
-              생성하기
+              {mode === "human" ? "사람에게 주문하기" : "생성하기"}
             </button>
           </div>
           <p className="mt-4 text-center text-xs leading-relaxed text-wine/45 sm:text-right">
-            AI 생성은 <strong>3~5분</strong> 정도 걸려요. 완료되면 이메일이나 카카오톡으로 알려드릴게요.
+            {mode === "human" ? (
+              <>주문서를 확인한 뒤 가능한 시간에 카카오톡으로 연락드려요.</>
+            ) : (
+              <>
+                AI 생성은 <strong>3~5분</strong> 정도 걸려요. 완성되면 바로 보여드릴게요.
+              </>
+            )}
           </p>
         </div>
       </div>
