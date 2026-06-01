@@ -3,6 +3,7 @@ import cors from "cors";
 import { env } from "./lib/env.js";
 import { categoriesRouter } from "./routes/categories.route.js";
 import { showcasesRouter } from "./routes/showcases.route.js";
+import { chatRouter } from "./routes/chat.route.js";
 import { errorHandler } from "./middleware/error.js";
 
 export function createApp(): Express {
@@ -16,6 +17,7 @@ export function createApp(): Express {
 
   app.use("/api/categories", categoriesRouter);
   app.use("/api/showcases", showcasesRouter);
+  app.use("/api/chat", chatRouter);
 
   app.use(errorHandler);
   return app;
