@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ebf0f4;
+  --foreground: #0a2540;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: var(--foreground);
+    background-color: var(--background);
+    font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* 톤온톤 분위기: 아주 옅은 단색 블루 글로우 (절제) */
+    background-image:
+      radial-gradient(50% 40% at 16% 0%, rgba(45, 127, 240, 0.08) 0%, transparent 60%),
+      radial-gradient(45% 38% at 92% 6%, rgba(21, 101, 216, 0.06) 0%, transparent 55%);
+    background-attachment: fixed;
+  }
+
+  /* 미세 그레인 오버레이 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Gothic A1", "IBM Plex Sans KR", system-ui, sans-serif;
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #0e4ca8 0%, #1565d8 50%, #2d7ff0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* 핑크 스크롤바 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #e4eefa;
+}
+::-webkit-scrollbar-thumb {
+  background: #5b9df5;
+  border-radius: 999px;
+  border: 2px solid #e4eefa;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d7ff0;
+}
+
+::selection {
+  background: #1565d8;
+  color: #fff;
+}

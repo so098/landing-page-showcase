@@ -1,0 +1,21 @@
+node_modules/
+.next/
+dist/
+out/
+build/
+coverage/
+*.log
+npm-debug.log*
+
+# env (commit .env.example only)
+.env
+.env.local
+.env.*.local
+
+# os / editor
+.DS_Store
+.claude/
+
+# typescript / next
+*.tsbuildinfo
+next-env.d.ts
