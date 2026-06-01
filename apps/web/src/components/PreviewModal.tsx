@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import type { Showcase } from "@melstudio/shared";
 import PagePreview from "./PagePreview";
 
@@ -116,6 +117,22 @@ export default function PreviewModal({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* 주문 CTA */}
+        <div className="flex flex-col items-center gap-3 border-t border-rose/10 bg-gradient-to-r from-petalSoft to-cream px-6 py-4 sm:flex-row sm:justify-between">
+          <p className="text-center text-sm text-wine/60 sm:text-left">
+            이 디자인이 마음에 드시나요? 바로 제작을 주문해 보세요.
+          </p>
+          <Link
+            href={`/order/${item.id}`}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-rose-grad px-7 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+          >
+            이 디자인으로 주문하기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </Link>
         </div>
       </div>
     </div>

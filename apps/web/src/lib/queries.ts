@@ -15,3 +15,11 @@ export function useAllShowcases() {
     queryFn: () => fetchShowcases({ limit: 100 }),
   });
 }
+
+// ③ 단계: 주문 페이지 — slug(=Showcase.id)로 단일 쇼케이스 찾기.
+// 전용 단건 엔드포인트가 아직 없으므로 전체 목록을 재사용한다.
+export function useShowcaseBySlug(slug: string) {
+  const query = useAllShowcases();
+  const showcase = query.data?.items.find((s) => s.id === slug) ?? null;
+  return { ...query, showcase };
+}
