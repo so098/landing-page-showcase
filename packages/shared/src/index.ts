@@ -28,3 +28,28 @@ export const ShowcaseListSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 export type ShowcaseList = z.infer<typeof ShowcaseListSchema>;
+
+// ── ④ 실시간 채팅 ──
+
+export const SENDER_TYPES = ["CUSTOMER", "ADMIN"] as const;
+export const SenderTypeSchema = z.enum(SENDER_TYPES);
+export type SenderType = (typeof SENDER_TYPES)[number];
+
+export const ChatMessageSchema = z.object({
+  id: z.string(),
+  roomId: z.string(),
+  senderType: SenderTypeSchema,
+  body: z.string(),
+  createdAt: z.string(), // ISO 8601
+});
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+export const ChatRoomSchema = z.object({
+  id: z.string(),
+  visitorId: z.string(),
+  visitorName: z.string(),
+  lastMessage: ChatMessageSchema.nullable(),
+  unreadCount: z.number(), // 관리자 기준 미읽음 (고객 메시지 중 readAt null)
+  updatedAt: z.string(), // ISO 8601
+});
+export type ChatRoom = z.infer<typeof ChatRoomSchema>;

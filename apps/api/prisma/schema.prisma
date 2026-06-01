@@ -31,3 +31,26 @@ model Showcase {
 
   @@index([categoryId])
 }
+
+// ── ④ 실시간 채팅 ──
+
+model ChatRoom {
+  id          String    @id @default(cuid())
+  visitorId   String    @unique // 고객 브라우저 고유 ID (1고객 1방)
+  visitorName String // 표시명 (목 로그인 이름 or "방문자")
+  messages    Message[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  roomId     String
+  room       ChatRoom  @relation(fields: [roomId], references: [id])
+  senderType String // CUSTOMER | ADMIN
+  body       String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([roomId, createdAt])
+}
