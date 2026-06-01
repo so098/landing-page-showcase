@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { SEED_CATEGORIES, SEED_SHOWCASES } from "../src/data/seed-data.js";
+import { SEED_CATEGORIES, ALL_SEED_SHOWCASES } from "../src/data/seed-data.js";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ async function main() {
     categoryIdBySlug.set(c.slug, created.id);
   }
 
-  for (const s of SEED_SHOWCASES) {
+  for (const s of ALL_SEED_SHOWCASES) {
     const categoryId = categoryIdBySlug.get(s.category);
     if (!categoryId) throw new Error(`Unknown category slug: ${s.category}`);
     await prisma.showcase.create({
