@@ -34,27 +34,32 @@ export default function OrderForm({
 }) {
   const router = useRouter();
   // ── 폼 상태 ──
+  // 목데이터 기본값: 바로 [생성하기]를 눌러 결과 페이지 흐름을 확인할 수 있게 채워둠.
+  // (백엔드 연동 시 빈 값으로 되돌릴 것)
   const [form, setForm] = useState({
-    businessName: "",
-    phone: "",
-    email: "",
-    industry: "",
-    links: "",
-    targetProfile: "",
-    targetPain: "",
-    targetMessage: "",
-    targetHesitation: "",
-    avoidFeel: "",
-    referenceSites: "",
-    preferredColors: "",
-    copyText: "",
+    businessName: "달콤 베이커리",
+    phone: "010-1234-5678",
+    email: "owner@dalkom.kr",
+    industry: "카페·베이커리",
+    links: "https://instagram.com/dalkom_bakery",
+    targetProfile: "20~30대 여성, 서울 마포구",
+    targetPain: "믿을 수 있는 수제 디저트 가게를 찾기 어려워요",
+    targetMessage: "당일 생산 원칙과 주문 제작 케이크의 차별점",
+    targetHesitation: "가격이 비쌀 것 같다는 인상",
+    avoidFeel: "차갑고 사무적인 느낌",
+    referenceSites: "https://example-bakery.com",
+    preferredColors: "크림, 베이지, 브라운",
+    copyText: "매일 아침 굽는 진짜 수제 디저트, 달콤 베이커리",
   });
-  const [purpose, setPurpose] = useState<Purpose | null>(null);
-  const [selectedInfo, setSelectedInfo] = useState<string[]>([]);
-  const [infoContents, setInfoContents] = useState<Record<string, string>>({});
-  const [pages, setPages] = useState<string[]>([BASE_PAGE]);
-  const [moods, setMoods] = useState<string[]>([]);
-  const [hasBrandColors, setHasBrandColors] = useState<boolean | null>(null);
+  const [purpose, setPurpose] = useState<Purpose | null>("고객 예약 유도");
+  const [selectedInfo, setSelectedInfo] = useState<string[]>(["대표 서비스 명", "가격/패키지"]);
+  const [infoContents, setInfoContents] = useState<Record<string, string>>({
+    "대표 서비스 명": "주문 제작 케이크, 구움과자 세트",
+    "가격/패키지": "케이크 35,000원~ / 구움과자 세트 18,000원",
+  });
+  const [pages, setPages] = useState<string[]>([BASE_PAGE, "예약/문의"]);
+  const [moods, setMoods] = useState<string[]>(["감성적인", "귀여운"]);
+  const [hasBrandColors, setHasBrandColors] = useState<boolean | null>(true);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
