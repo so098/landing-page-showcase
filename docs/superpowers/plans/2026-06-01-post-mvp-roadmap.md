@@ -42,16 +42,16 @@
 
 **작업**
 - [ ] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before)
-- [ ] 메인 페이지(`/`): 쇼케이스 데이터를 서버 컴포넌트에서 fetch (ISR) → 클라이언트 인터랙션(필터/슬라이더/모달)만 클라이언트 컴포넌트로 분리
+- [x] 메인 페이지(`/`): 쇼케이스 데이터를 서버 컴포넌트에서 fetch (ISR) → 클라이언트 인터랙션(필터/슬라이더/모달)만 클라이언트 컴포넌트로 분리
 - [ ] **홈 리뷰 리스트 신규**: Prisma `Review` 모델 + 시드 + `GET /api/reviews` + 홈 섹션 (별점/내용/작성자) — ISR + 리뷰 작성 시 `revalidateTag("reviews")`
-- [ ] `/showcase`: 첫 페이지를 서버에서 렌더(ISR) + 이후 페이지만 클라이언트 무한스크롤 (하이브리드)
-- [ ] `/guide`: 완전 정적(서버 컴포넌트만, 인터랙션은 아코디언뿐)
+- [x] `/showcase`: 첫 페이지를 서버에서 렌더(ISR) + 이후 페이지만 클라이언트 무한스크롤 (하이브리드)
+- [x] `/guide`: 완전 정적(서버 컴포넌트만, 인터랙션은 아코디언뿐)
 - [ ] 메타데이터/SEO: 페이지별 `generateMetadata`, OG 태그
 - [ ] 측정: After 수치 기록 → README에 Before/After 표
 
 **테스트 (이 단계에 포함)**
-- [ ] 프론트 테스트 환경 구축: Vitest + React Testing Library (`apps/web`에 최초 도입)
-- [ ] 서버/클라이언트 분리된 컴포넌트 단위 테스트 (TagBar 필터, 슬라이더 페이지네이션 로직)
+- [x] 프론트 테스트 환경 구축: Vitest + React Testing Library (`apps/web`에 최초 도입)
+- [ ] 서버/클라이언트 분리된 컴포넌트 단위 테스트 (TagBar 필터 ✅, HomeShowcaseSection ✅ — 슬라이더 페이지네이션(ShowcaseGrid)은 미작성)
 - [ ] Playwright 도입 + E2E: 메인 페이지 로드 → 필터 → 모달 열기
 
 **사람이 확인할 것**
