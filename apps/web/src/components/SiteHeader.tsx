@@ -19,6 +19,9 @@ export default function SiteHeader() {
         <Link href="/showcase" className="transition-colors hover:text-crimson">
           쇼케이스
         </Link>
+        <Link href="/guide" className="transition-colors hover:text-crimson">
+          안내
+        </Link>
         <Link
           href="/order"
           className="rounded-full bg-ink px-4 py-2 text-white transition-all hover:bg-crimson"
