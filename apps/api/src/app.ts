@@ -1,6 +1,9 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import { env } from "./lib/env.js";
+import { categoriesRouter } from "./routes/categories.route.js";
+import { showcasesRouter } from "./routes/showcases.route.js";
+import { errorHandler } from "./middleware/error.js";
 
 export function createApp(): Express {
   const app = express();
@@ -11,5 +14,9 @@ export function createApp(): Express {
     res.json({ status: "ok" });
   });
 
+  app.use("/api/categories", categoriesRouter);
+  app.use("/api/showcases", showcasesRouter);
+
+  app.use(errorHandler);
   return app;
 }
