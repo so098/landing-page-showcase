@@ -10,13 +10,22 @@ npm-workspaces 모노레포.
 
 ```bash
 cp .env.example apps/api/.env   # 최초 1회
-docker compose up -d            # postgres + minio
-npm install
-npm run db:seed                 # 시드(카테고리 8 + 쇼케이스 39)
-npm run dev                     # api(4000) + web(3000) 동시 기동
+npm install                     # 최초 1회
+npm run setup                   # 최초 1회: Docker 대기 → 마이그레이션 → 시드(8 + 39)
+npm start                       # 매일: Docker 기동 + api(4000)·web(3000) 동시 실행
 ```
 
 웹: http://localhost:3000 · API: http://localhost:4000
+
+| 스크립트 | 설명 |
+|---|---|
+| `npm start` | Docker 기동(준비 대기) + 개발 서버 — **데이터 보존** |
+| `npm run setup` | Docker + 마이그레이션 + 시드 — **데이터 초기화/리셋** (최초 1회) |
+| `npm run dev` | 개발 서버만(Docker 별도 기동 필요) |
+| `npm test` | 전체 테스트 |
+| `npm run stop` | Docker 컨테이너 종료 |
+
+> `setup`의 시드는 데이터를 지우고 다시 넣으므로, 평소엔 `npm start`를 쓰세요.
 
 ## 테스트
 
