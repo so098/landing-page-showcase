@@ -14,7 +14,23 @@ export default function OrderResultPage() {
   const [order, setOrder] = useState<SavedOrderState | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+
+  // 완료 모달 ESC 닫기 + 스크롤 잠금
+  useEffect(() => {
+    if (!completed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCompleted(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [completed]);
 
   useEffect(() => {
     setOrder(loadOrder());
@@ -144,13 +160,21 @@ export default function OrderResultPage() {
               <button
                 type="button"
                 onClick={() => setShowMore(true)}
-                className="w-full rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                className="w-full rounded-full bg-ink px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-crimson sm:w-auto"
               >
                 추가로 만들기
               </button>
+              <button
+                type="button"
+                onClick={() => setCompleted(true)}
+                className="w-full rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+              >
+                이대로 완료하기
+              </button>
             </div>
             <p className="mt-4 text-center text-xs text-wine/45">
-              수정하기 — 주문서를 고쳐서 다시 생성해요 · 추가로 만들기 — 새 페이지를 더 만들어요
+              수정하기 — 주문서를 고쳐서 다시 생성 · 추가로 만들기 — 새 페이지를 더 제작 · 이대로
+              완료하기 — 이 페이지로 확정
             </p>
 
             {/* ── 추가로 만들기: 방법 선택 ── */}
@@ -214,6 +238,60 @@ export default function OrderResultPage() {
                   </div>
                 </div>
               </section>
+            )}
+
+            {/* ── 이대로 완료하기 모달 ── */}
+            {completed && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in sm:p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-label="주문 완료 안내"
+              >
+                {/* 백드롭 */}
+                <button
+                  type="button"
+                  onClick={() => setCompleted(false)}
+                  aria-label="닫기"
+                  className="absolute inset-0 cursor-default bg-wine/55 backdrop-blur-md"
+                />
+
+                {/* 패널 */}
+                <div className="relative z-10 w-full max-w-md animate-modal-in rounded-3xl border border-white/40 bg-cream p-8 text-center shadow-petalHover sm:p-10">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </div>
+                  <h2 className="mt-6 font-display text-2xl font-extrabold text-ink">
+                    주문이 완료되었어요
+                  </h2>
+                  <p className="mt-4 text-sm leading-relaxed text-wine/70">
+                    도메인과 호스팅 연결 건으로
+                    <br />
+                    <strong className="text-crimson">{order.form.phone}</strong>으로
+                    연락드리겠습니다.
+                  </p>
+                  <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
+                    연락은 최대 2일 정도 소요될 수 있어요
+                  </p>
+                  <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                    <Link
+                      href="/"
+                      className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                    >
+                      홈으로 가기
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setCompleted(false)}
+                      className="w-full rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson sm:w-auto"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}
