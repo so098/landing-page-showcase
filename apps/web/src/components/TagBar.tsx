@@ -9,7 +9,7 @@ export default function TagBar({
   onChange,
 }: {
   categories: Category[]; // "all" 포함(페이지에서 앞에 추가해 전달)
-  counts: Record<string, number>;
+  counts?: Record<string, number>; // 없으면 카운트 배지 미표시 (무한스크롤 페이지)
   active: string;
   onChange: (id: string) => void;
 }) {
@@ -29,13 +29,15 @@ export default function TagBar({
             }`}
           >
             {cat.label}
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                isActive ? "bg-white/25 text-white" : "bg-petal/50 text-crimson-deep"
-              }`}
-            >
-              {counts[cat.id] ?? 0}
-            </span>
+            {counts && (
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                  isActive ? "bg-white/25 text-white" : "bg-petal/50 text-crimson-deep"
+                }`}
+              >
+                {counts[cat.id] ?? 0}
+              </span>
+            )}
           </button>
         );
       })}

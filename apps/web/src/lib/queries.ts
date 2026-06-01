@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchCategories, fetchShowcases } from "./api";
+
+const INFINITE_PAGE_SIZE = 12;
 
 export function useCategories() {
   return useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
@@ -13,6 +15,17 @@ export function useAllShowcases() {
   return useQuery({
     queryKey: ["showcases", "all"],
     queryFn: () => fetchShowcases({ limit: 100 }),
+  });
+}
+
+// ②-a: /showcase 무한스크롤 — 커서 페이지네이션을 useInfiniteQuery로 연결
+export function useInfiniteShowcases(category: string) {
+  return useInfiniteQuery({
+    queryKey: ["showcases", "infinite", category],
+    queryFn: ({ pageParam }) =>
+      fetchShowcases({ limit: INFINITE_PAGE_SIZE, cursor: pageParam, category }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor,
   });
 }
 
