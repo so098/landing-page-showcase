@@ -75,3 +75,66 @@ export const SEED_SHOWCASES: {
   { slug: "estate-stay", title: "스테이 한옥", category: "realestate", blurb: "독채 스테이 예약", accent: "#92400E", layout: "hero" },
   { slug: "estate-space", title: "스페이스 대관", category: "realestate", blurb: "파티룸·스튜디오 대관", accent: "#7C3AED", layout: "minimal" },
 ];
+
+// ── 무한스크롤 체감용 추가 생성 데이터 ──────────────────────────
+// 결정적(deterministic) 생성: 난수 없이 인덱스 조합으로만 만들어 시드 멱등성을 유지한다.
+
+const GEN_PER_CATEGORY = 15;
+
+const GEN_PREFIXES = [
+  "루미", "오드", "베르", "솔레", "마노", "허브", "노바", "유노",
+  "리브", "테라", "모노", "아벨", "코지", "하루", "온더",
+];
+
+const GEN_SUFFIXES: Record<string, string[]> = {
+  cafe: ["커피", "로스터리", "베이커리", "티룸", "디저트바"],
+  beauty: ["뷰티랩", "살롱", "스파", "네일바", "에스테틱"],
+  fitness: ["짐", "필라테스", "요가스튜디오", "복싱클럽", "PT스튜디오"],
+  education: ["아카데미", "클래스", "스쿨", "랩", "스튜디오"],
+  shop: ["스토어", "마켓", "셀렉트샵", "부티크", "편집샵"],
+  clinic: ["의원", "클리닉", "한의원", "치과", "피부과"],
+  restaurant: ["키친", "다이닝", "비스트로", "그릴", "테이블"],
+  realestate: ["부동산", "오피스", "스테이", "스튜디오", "라운지"],
+};
+
+const GEN_BLURBS: Record<string, string[]> = {
+  cafe: ["시그니처 블렌드 소개", "디저트 신메뉴 출시", "원두 정기구독 안내", "브런치 메뉴 홍보", "매장 오픈 이벤트"],
+  beauty: ["시술 예약 랜딩", "신규 고객 이벤트", "뷰티 클래스 모집", "멤버십 안내", "포트폴리오 소개"],
+  fitness: ["체험 수업 신청", "회원권 프로모션", "트레이너 소개", "챌린지 모집", "신규 오픈 안내"],
+  education: ["수강생 모집", "커리큘럼 안내", "무료 체험 신청", "설명회 예약", "수강 후기 소개"],
+  shop: ["신상품 출시", "시즌 세일 안내", "정기구독 서비스", "브랜드 스토리", "사전예약 이벤트"],
+  clinic: ["진료 예약 안내", "비대면 상담 신청", "시술 전후 안내", "건강검진 패키지", "신규 장비 도입"],
+  restaurant: ["예약 페이지", "신메뉴 출시", "프라이빗 다이닝", "케이터링 안내", "오픈 기념 이벤트"],
+  realestate: ["분양 안내", "입주 상담 신청", "공간 대관 안내", "투어 예약", "입지 소개"],
+};
+
+const GEN_ACCENTS = [
+  "#C2410C", "#DB2777", "#0F766E", "#2563EB", "#7C3AED",
+  "#EA580C", "#16A34A", "#E11D48", "#0891B2", "#A16207",
+];
+
+const GEN_LAYOUTS = ["hero", "split", "grid", "minimal"];
+
+export function generateShowcases(
+  perCategory: number = GEN_PER_CATEGORY,
+): typeof SEED_SHOWCASES {
+  const out: typeof SEED_SHOWCASES = [];
+  SEED_CATEGORIES.forEach((cat, catIdx) => {
+    const suffixes = GEN_SUFFIXES[cat.slug];
+    const blurbs = GEN_BLURBS[cat.slug];
+    for (let i = 0; i < perCategory; i++) {
+      out.push({
+        slug: `${cat.slug}-gen-${i + 1}`,
+        title: `${GEN_PREFIXES[i % GEN_PREFIXES.length]} ${suffixes[i % suffixes.length]}`,
+        category: cat.slug,
+        blurb: blurbs[i % blurbs.length],
+        accent: GEN_ACCENTS[(catIdx + i) % GEN_ACCENTS.length],
+        layout: GEN_LAYOUTS[(catIdx + i) % GEN_LAYOUTS.length],
+      });
+    }
+  });
+  return out;
+}
+
+// 시드에 사용하는 전체 목록 (원본 40 + 생성 120 = 160)
+export const ALL_SEED_SHOWCASES = [...SEED_SHOWCASES, ...generateShowcases()];
