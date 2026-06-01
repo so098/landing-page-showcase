@@ -2,26 +2,35 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Showcase } from "@melstudio/shared";
 import { useShowcaseBySlug } from "@/lib/queries";
 import { loadOrder, type SavedOrderState } from "@/lib/orderStorage";
 import SiteHeader from "@/components/SiteHeader";
 import PagePreview from "@/components/PagePreview";
 
+type ModalKind = null | "complete" | "editChoice" | "humanEdit";
+
 // 생성 결과 — 목(mock)으로 만들어진 랜딩페이지를 보여주고
-// 수정하기 / 추가로 만들기로 이어지는 페이지.
+// 수정하기(AI/사람) / 추가로 만들기 / 이대로 완료하기로 이어지는 페이지.
 export default function OrderResultPage() {
+  const router = useRouter();
   const [order, setOrder] = useState<SavedOrderState | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [modal, setModal] = useState<ModalKind>(null);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  // 완료 모달 ESC 닫기 + 스크롤 잠금
   useEffect(() => {
-    if (!completed) return;
+    setOrder(loadOrder());
+    setLoaded(true);
+  }, []);
+
+  // 모달 ESC 닫기 + 스크롤 잠금
+  useEffect(() => {
+    if (!modal) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCompleted(false);
+      if (e.key === "Escape") setModal(null);
     };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -30,12 +39,7 @@ export default function OrderResultPage() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [completed]);
-
-  useEffect(() => {
-    setOrder(loadOrder());
-    setLoaded(true);
-  }, []);
+  }, [modal]);
 
   // 쇼케이스를 골라서 주문한 경우 해당 디자인을 사용
   const { showcase: fetched } = useShowcaseBySlug(order?.showcaseId ?? "");
@@ -63,8 +67,6 @@ export default function OrderResultPage() {
       moreRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [showMore]);
-
-  const editHref = order?.showcaseId ? `/order/${order.showcaseId}?edit=1` : "/order?edit=1";
 
   return (
     <div className="relative z-10 min-h-screen">
@@ -151,12 +153,13 @@ export default function OrderResultPage() {
 
             {/* ── 액션 버튼 ── */}
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href={editHref}
+              <button
+                type="button"
+                onClick={() => setModal("editChoice")}
                 className="w-full rounded-full border border-rose/25 bg-white px-8 py-3.5 text-center text-sm font-bold text-crimson transition-all hover:border-rose hover:shadow-petal sm:w-auto"
               >
                 수정하기
-              </Link>
+              </button>
               <button
                 type="button"
                 onClick={() => setShowMore(true)}
@@ -166,14 +169,14 @@ export default function OrderResultPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setCompleted(true)}
+                onClick={() => setModal("complete")}
                 className="w-full rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
               >
                 이대로 완료하기
               </button>
             </div>
             <p className="mt-4 text-center text-xs text-wine/45">
-              수정하기 — 주문서를 고쳐서 다시 생성 · 추가로 만들기 — 새 페이지를 더 제작 · 이대로
+              수정하기 — AI 또는 사람과 함께 수정 · 추가로 만들기 — 새 페이지를 더 제작 · 이대로
               완료하기 — 이 페이지로 확정
             </p>
 
@@ -240,57 +243,149 @@ export default function OrderResultPage() {
               </section>
             )}
 
-            {/* ── 이대로 완료하기 모달 ── */}
-            {completed && (
+            {/* ══ 모달들 ══ */}
+            {modal && (
               <div
                 className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in sm:p-6"
                 role="dialog"
                 aria-modal="true"
-                aria-label="주문 완료 안내"
               >
                 {/* 백드롭 */}
                 <button
                   type="button"
-                  onClick={() => setCompleted(false)}
+                  onClick={() => setModal(null)}
                   aria-label="닫기"
                   className="absolute inset-0 cursor-default bg-wine/55 backdrop-blur-md"
                 />
 
-                {/* 패널 */}
-                <div className="relative z-10 w-full max-w-md animate-modal-in rounded-3xl border border-white/40 bg-cream p-8 text-center shadow-petalHover sm:p-10">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
+                {/* ── 이대로 완료하기 모달 ── */}
+                {modal === "complete" && (
+                  <div className="relative z-10 w-full max-w-md animate-modal-in rounded-3xl border border-white/40 bg-cream p-8 text-center shadow-petalHover sm:p-10">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </div>
+                    <h2 className="mt-6 font-display text-2xl font-extrabold text-ink">
+                      주문이 완료되었어요
+                    </h2>
+                    <p className="mt-4 text-sm leading-relaxed text-wine/70">
+                      도메인과 호스팅 연결 건으로
+                      <br />
+                      <strong className="text-crimson">{order.form.phone}</strong>으로
+                      연락드리겠습니다.
+                    </p>
+                    <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
+                      연락은 최대 2일 정도 소요될 수 있어요
+                    </p>
+                    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                      <Link
+                        href="/"
+                        className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                      >
+                        홈으로 가기
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setModal(null)}
+                        className="w-full rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson sm:w-auto"
+                      >
+                        닫기
+                      </button>
+                    </div>
                   </div>
-                  <h2 className="mt-6 font-display text-2xl font-extrabold text-ink">
-                    주문이 완료되었어요
-                  </h2>
-                  <p className="mt-4 text-sm leading-relaxed text-wine/70">
-                    도메인과 호스팅 연결 건으로
-                    <br />
-                    <strong className="text-crimson">{order.form.phone}</strong>으로
-                    연락드리겠습니다.
-                  </p>
-                  <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
-                    연락은 최대 2일 정도 소요될 수 있어요
-                  </p>
-                  <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                    <Link
-                      href="/"
-                      className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
-                    >
-                      홈으로 가기
-                    </Link>
+                )}
+
+                {/* ── 수정 방법 선택 모달 ── */}
+                {modal === "editChoice" && (
+                  <div className="relative z-10 w-full max-w-2xl animate-modal-in rounded-3xl border border-white/40 bg-cream p-7 shadow-petalHover sm:p-9">
+                    <h2 className="text-center font-display text-2xl font-extrabold text-ink">
+                      어떻게 수정할까요?
+                    </h2>
+                    <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                      {/* AI 수정 */}
+                      <button
+                        type="button"
+                        onClick={() => router.push("/order/edit")}
+                        className="group flex flex-col rounded-2xl border border-crimson/30 bg-white p-6 text-left shadow-soft ring-1 ring-crimson/10 transition-all hover:-translate-y-1 hover:shadow-petalHover"
+                      >
+                        <span className="text-2xl">🤖</span>
+                        <span className="mt-3 font-display text-lg font-extrabold text-ink">
+                          AI가 2~3분 만에 수정하기
+                        </span>
+                        <span className="mt-2 flex-1 text-xs leading-relaxed text-wine/60">
+                          어느 부분을 수정할지 선택하고, 직접 AI에게 말해가며 수정할 수 있어요.
+                        </span>
+                        <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-crimson">
+                          바로 수정하러 가기
+                          <svg className="transition-transform group-hover:translate-x-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </button>
+
+                      {/* 사람 수정 */}
+                      <button
+                        type="button"
+                        onClick={() => setModal("humanEdit")}
+                        className="group flex flex-col rounded-2xl border border-rose/15 bg-white/70 p-6 text-left shadow-soft transition-all hover:-translate-y-1 hover:shadow-petal"
+                      >
+                        <span className="text-2xl">👤</span>
+                        <span className="mt-3 font-display text-lg font-extrabold text-ink">
+                          사람에게 말해가며 수정하기
+                        </span>
+                        <span className="mt-2 flex-1 text-xs leading-relaxed text-wine/60">
+                          담당자와 이야기 나누며 꼼꼼하게 수정해요. 신청 시 최대 이틀 소요돼요.
+                        </span>
+                        <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-wine/70 group-hover:text-crimson">
+                          수정 신청하기
+                          <svg className="transition-transform group-hover:translate-x-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setCompleted(false)}
-                      className="w-full rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson sm:w-auto"
+                      onClick={() => setModal(null)}
+                      className="mx-auto mt-6 block text-sm font-medium text-wine/50 transition-colors hover:text-crimson"
                     >
                       닫기
                     </button>
                   </div>
-                </div>
+                )}
+
+                {/* ── 사람 수정 신청 완료 모달 ── */}
+                {modal === "humanEdit" && (
+                  <div className="relative z-10 w-full max-w-md animate-modal-in rounded-3xl border border-white/40 bg-cream p-8 text-center shadow-petalHover sm:p-10">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ink text-white shadow-petal">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                      </svg>
+                    </div>
+                    <h2 className="mt-6 font-display text-2xl font-extrabold text-ink">
+                      수정 신청이 접수되었어요
+                    </h2>
+                    <p className="mt-4 text-sm leading-relaxed text-wine/70">
+                      담당자가 수정 건으로
+                      <br />
+                      <strong className="text-crimson">{order.form.phone}</strong>으로
+                      연락드리겠습니다.
+                    </p>
+                    <p className="mt-3 rounded-xl bg-petal/40 px-4 py-2.5 text-xs font-medium text-crimson-deep">
+                      연락은 최대 2일 정도 소요될 수 있어요
+                    </p>
+                    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => setModal(null)}
+                        className="w-full rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                      >
+                        확인
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
