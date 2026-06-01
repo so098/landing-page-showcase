@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Showcase } from "@melstudio/shared";
 import { useShowcaseBySlug } from "@/lib/queries";
-import { loadOrder, type SavedOrderState } from "@/lib/orderStorage";
+import {
+  loadOrder,
+  getRemainingEdits,
+  consumeEdit,
+  EDIT_LIMIT,
+  type SavedOrderState,
+} from "@/lib/orderStorage";
 import SiteHeader from "@/components/SiteHeader";
 import PagePreview from "@/components/PagePreview";
 
@@ -18,11 +24,20 @@ export default function OrderResultPage() {
   const [order, setOrder] = useState<SavedOrderState | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
+  const [editsLeft, setEditsLeft] = useState(EDIT_LIMIT);
 
   useEffect(() => {
     setOrder(loadOrder());
+    setEditsLeft(getRemainingEdits());
     setLoaded(true);
   }, []);
+
+  // 수정 1회 사용 (AI/사람 공통) — 차감 후 다음 동작 실행
+  function spendEdit(after: () => void) {
+    if (editsLeft <= 0) return;
+    setEditsLeft(consumeEdit());
+    after();
+  }
 
   // 모달 ESC 닫기 + 스크롤 잠금
   useEffect(() => {
@@ -147,9 +162,17 @@ export default function OrderResultPage() {
               <button
                 type="button"
                 onClick={() => setModal("editChoice")}
-                className="w-full rounded-full border border-rose/25 bg-white px-8 py-3.5 text-center text-sm font-bold text-crimson transition-all hover:border-rose hover:shadow-petal sm:w-auto"
+                disabled={editsLeft <= 0}
+                className={`w-full rounded-full border px-8 py-3.5 text-center text-sm font-bold transition-all sm:w-auto ${
+                  editsLeft > 0
+                    ? "border-rose/25 bg-white text-crimson hover:border-rose hover:shadow-petal"
+                    : "cursor-not-allowed border-rose/15 bg-white/60 text-wine/30"
+                }`}
               >
-                수정하기
+                수정하기{" "}
+                <span className={editsLeft > 0 ? "text-wine/40" : ""}>
+                  ({editsLeft}회 남음)
+                </span>
               </button>
               <button
                 type="button"
@@ -167,8 +190,8 @@ export default function OrderResultPage() {
               </button>
             </div>
             <p className="mt-4 text-center text-xs text-wine/45">
-              수정하기 — AI 또는 사람과 함께 수정 · 추가로 만들기 — 새 페이지를 더 제작 · 이대로
-              완료하기 — 이 페이지로 확정
+              수정하기 — AI 또는 사람과 함께 수정 (총 {EDIT_LIMIT}회, 1회 수정 시 1회 차감) ·
+              추가로 만들기 — 새 페이지를 더 제작 · 이대로 완료하기 — 이 페이지로 확정
             </p>
 
             {/* ══ 모달들 ══ */}
@@ -234,11 +257,18 @@ export default function OrderResultPage() {
                     <h2 className="text-center font-display text-2xl font-extrabold text-ink">
                       어떻게 수정할까요?
                     </h2>
-                    <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    <p className="mt-3 text-center">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-petal/40 px-4 py-1.5 text-xs font-semibold text-crimson-deep">
+                        수정은 총 {EDIT_LIMIT}회까지 — 현재{" "}
+                        <strong className="font-display text-sm">{editsLeft}회</strong> 남았어요
+                        (수정할 때마다 1회 차감)
+                      </span>
+                    </p>
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
                       {/* AI 수정 */}
                       <button
                         type="button"
-                        onClick={() => router.push("/order/edit")}
+                        onClick={() => spendEdit(() => router.push("/order/edit"))}
                         className="group flex flex-col rounded-2xl border border-crimson/30 bg-white p-6 text-left shadow-soft ring-1 ring-crimson/10 transition-all hover:-translate-y-1 hover:shadow-petalHover"
                       >
                         <span className="text-2xl">🤖</span>
@@ -259,7 +289,7 @@ export default function OrderResultPage() {
                       {/* 사람 수정 */}
                       <button
                         type="button"
-                        onClick={() => setModal("humanEdit")}
+                        onClick={() => spendEdit(() => setModal("humanEdit"))}
                         className="group flex flex-col rounded-2xl border border-rose/15 bg-white/70 p-6 text-left shadow-soft transition-all hover:-translate-y-1 hover:shadow-petal"
                       >
                         <span className="text-2xl">👤</span>

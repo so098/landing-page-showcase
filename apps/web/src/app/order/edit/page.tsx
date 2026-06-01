@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Showcase } from "@melstudio/shared";
 import { useShowcaseBySlug } from "@/lib/queries";
-import { loadOrder, type SavedOrderState } from "@/lib/orderStorage";
+import {
+  loadOrder,
+  getRemainingEdits,
+  EDIT_LIMIT,
+  type SavedOrderState,
+} from "@/lib/orderStorage";
 import SiteHeader from "@/components/SiteHeader";
 import PagePreview from "@/components/PagePreview";
 
@@ -37,12 +42,14 @@ export default function OrderEditPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [editsLeft, setEditsLeft] = useState(EDIT_LIMIT);
   const responseIndex = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const saved = loadOrder();
     setOrder(saved);
+    setEditsLeft(getRemainingEdits());
     setLoaded(true);
     if (saved) {
       setMessages([
@@ -129,6 +136,14 @@ export default function OrderEditPage() {
               </h1>
               <p className="mt-2 text-sm text-wine/60">
                 수정할 부분을 고르고, 원하는 내용을 AI에게 말해주세요. 2~3분이면 반영돼요.
+              </p>
+              <p className="mt-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-petal/40 px-4 py-1.5 text-xs font-semibold text-crimson-deep">
+                  남은 수정 횟수{" "}
+                  <strong className="font-display text-sm">
+                    {editsLeft}회 / 총 {EDIT_LIMIT}회
+                  </strong>
+                </span>
               </p>
             </div>
 
