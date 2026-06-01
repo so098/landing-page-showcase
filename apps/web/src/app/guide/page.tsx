@@ -98,7 +98,7 @@ export default function GuidePage() {
           <PathCard
             emoji="🤖"
             name="AI로 바로 만들기"
-            price="100,000원"
+            price="50,000원"
             accent="ai"
             steps={["공통 주문서 수정", "[생성] 버튼 클릭", "3~5분이면 완성"]}
             footer="빠르게, 바로 받아보고 싶을 때"
@@ -108,7 +108,7 @@ export default function GuidePage() {
           <PathCard
             emoji="👤"
             name="사람과 이야기하며 만들기"
-            price="500,000원"
+            price="300,000원"
             accent="human"
             steps={["공통 주문서 수정", "사람에게 주문하기 클릭", "가능한 시간에 카톡으로 연락", "이야기 나누며 함께 제작"]}
             footer="꼼꼼하게, 상의하며 만들고 싶을 때"
