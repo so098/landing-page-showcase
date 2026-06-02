@@ -22,6 +22,16 @@ describe("buildOffsets", () => {
   it("행이 0개면 [0]", () => {
     expect(buildOffsets(0, 100, new Map())).toEqual([0]);
   });
+
+  it("비정상 실측값(NaN/음수/0)은 무시하고 추정값을 쓴다", () => {
+    const measured = new Map([
+      [0, NaN],
+      [1, -50],
+      [2, 0],
+    ]);
+    // 전부 비정상 → 모두 추정값 100 사용
+    expect(buildOffsets(3, 100, measured)).toEqual([0, 100, 200, 300]);
+  });
 });
 
 describe("totalHeight", () => {

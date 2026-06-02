@@ -22,7 +22,10 @@ export function buildOffsets(
   const offsets = new Array<number>(rowCount + 1);
   offsets[0] = 0;
   for (let i = 0; i < rowCount; i++) {
-    offsets[i + 1] = offsets[i] + (measured.get(i) ?? estimateHeight);
+    // 비정상 실측값(NaN/음수/0)은 무시 — offsets의 단조 증가(이진 탐색 전제)를 보장
+    const h = measured.get(i);
+    offsets[i + 1] =
+      offsets[i] + (h !== undefined && Number.isFinite(h) && h > 0 ? h : estimateHeight);
   }
   return offsets;
 }
