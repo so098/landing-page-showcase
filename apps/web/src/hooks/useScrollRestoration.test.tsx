@@ -22,7 +22,8 @@ describe("useScrollRestoration", () => {
       JSON.stringify({ offset: 1234, category: "all", pageCount: 3 }),
     );
     renderHook(() => useScrollRestoration("all", 3));
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
+    // instant 스크롤 객체 형태 — 전역 scroll-behavior: smooth 애니메이션 방지
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 1234, behavior: "instant" });
   });
 
   it("카테고리가 다르면 복원하지 않는다", () => {
@@ -66,7 +67,7 @@ describe("useScrollRestoration", () => {
 
     // 캐시 하이드레이션으로 pageCount 도달
     rerender({ pageCount: 3 });
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 1234, behavior: "instant" });
   });
 
   it("복원 대기 중 사용자가 이미 스크롤했으면 늦은 복원을 하지 않는다", () => {
