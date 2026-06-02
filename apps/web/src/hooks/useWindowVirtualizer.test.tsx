@@ -67,6 +67,26 @@ describe("useWindowVirtualizer", () => {
     expect(result.current.totalHeight).toBe(1000 + 100); // 0번 행 100 → 200
   });
 
+  it("measureRow는 같은 인덱스에 대해 안정적인(같은) 콜백을 반환한다", () => {
+    const { result, rerender } = renderHook(() =>
+      useWindowVirtualizer({ rowCount: 10, estimateHeight: 100, overscan: 2 }),
+    );
+
+    const cb1 = result.current.measureRow(3);
+
+    // 리렌더 후에도 같은 인덱스는 같은 콜백 (ref 재호출로 인한 옵저버 재생성 방지)
+    act(() => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+    rerender();
+
+    const cb2 = result.current.measureRow(3);
+    expect(cb2).toBe(cb1);
+
+    // 다른 인덱스는 다른 콜백
+    expect(result.current.measureRow(4)).not.toBe(cb1);
+  });
+
   it("rowCount가 줄어들면 (필터 변경) 범위가 클램프된다", () => {
     const { result, rerender } = renderHook(
       ({ rowCount }) =>

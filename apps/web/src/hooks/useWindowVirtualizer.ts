@@ -27,7 +27,9 @@ type Result = {
   totalHeight: number;
   /** 그리드 컨테이너 ref — scrollMargin(문서 상단 오프셋) 계산용 */
   containerRef: (el: HTMLElement | null) => void;
-  /** 행 ref 팩토리 — <div ref={measureRow(index)}> 로 사용 */
+  /** 행 ref 팩토리 — <div key={index} ref={measureRow(index)}> 로 사용.
+   *  주의: 행 wrapper는 반드시 행 인덱스로 key를 줘야 한다 (아이템 id ❌).
+   *  인덱스 키여야 ref null 호출 → 옵저버 해제가 1:1로 동작한다. */
   measureRow: (index: number) => (el: HTMLElement | null) => void;
 };
 
@@ -90,9 +92,22 @@ export default function useWindowVirtualizer({
   rangeStartRef.current = range.start;
 
   // ── 행 실측 (ResizeObserver) ──
+
+  // 인덱스별 ref 콜백 캐시 — 렌더마다 같은 함수를 반환해야
+  // React가 ref를 재호출(null → el)하며 옵저버를 매 프레임 재생성하는 것을 막는다.
+  const callbacksRef = useRef(new Map<number, (el: HTMLElement | null) => void>());
+
+  // deps가 바뀌면 콜백 캐시 무효화 (이 프로젝트에서는 발생하지 않지만 정확성 보장)
+  useEffect(() => {
+    callbacksRef.current.clear();
+  }, [estimateHeight, scheduleUpdate]);
+
   const measureRow = useCallback(
-    (index: number) =>
-      (el: HTMLElement | null) => {
+    (index: number) => {
+      const cached = callbacksRef.current.get(index);
+      if (cached) return cached;
+
+      const callback = (el: HTMLElement | null) => {
         // 기존 옵저버 해제 (행 언마운트 또는 교체)
         const prev = observersRef.current.get(index);
         if (prev) {
@@ -117,7 +132,11 @@ export default function useWindowVirtualizer({
         });
         observer.observe(el);
         observersRef.current.set(index, observer);
-      },
+      };
+
+      callbacksRef.current.set(index, callback);
+      return callback;
+    },
     [estimateHeight, scheduleUpdate],
   );
 
