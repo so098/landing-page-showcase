@@ -13,6 +13,7 @@ describe("useScrollRestoration", () => {
       cb(0);
       return 0;
     });
+    Object.defineProperty(window, "scrollY", { writable: true, value: 0 });
   });
 
   it("저장된 위치가 있고 카테고리/페이지 수가 맞으면 복원한다", () => {
@@ -50,6 +51,41 @@ describe("useScrollRestoration", () => {
 
     const saved = JSON.parse(sessionStorage.getItem(KEY) ?? "{}");
     expect(saved).toEqual({ offset: 777, category: "all", pageCount: 2 });
+  });
+
+  it("마운트 시점에 캐시가 비어 있다가 나중에 로드되면 (비동기 하이드레이션) 복원한다", () => {
+    sessionStorage.setItem(
+      KEY,
+      JSON.stringify({ offset: 1234, category: "all", pageCount: 3 }),
+    );
+    const { rerender } = renderHook(
+      ({ pageCount }) => useScrollRestoration("all", pageCount),
+      { initialProps: { pageCount: 0 } },
+    );
+    expect(window.scrollTo).not.toHaveBeenCalled();
+
+    // 캐시 하이드레이션으로 pageCount 도달
+    rerender({ pageCount: 3 });
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 1234);
+  });
+
+  it("복원 대기 중 사용자가 이미 스크롤했으면 늦은 복원을 하지 않는다", () => {
+    sessionStorage.setItem(
+      KEY,
+      JSON.stringify({ offset: 1234, category: "all", pageCount: 3 }),
+    );
+    const { rerender } = renderHook(
+      ({ pageCount }) => useScrollRestoration("all", pageCount),
+      { initialProps: { pageCount: 1 } },
+    );
+    expect(window.scrollTo).not.toHaveBeenCalled();
+
+    // 사용자가 직접 스크롤 시작 (복원 전)
+    Object.defineProperty(window, "scrollY", { writable: true, value: 500 });
+
+    // 이후 페이지가 자연스럽게 로드되어 pageCount 도달 — 복원하면 안 됨 (가로채기 방지)
+    rerender({ pageCount: 3 });
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
   it("sessionStorage가 막혀 있어도 (시크릿 모드) throw하지 않는다", () => {

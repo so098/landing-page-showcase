@@ -34,21 +34,34 @@ export default function useScrollRestoration(
   category: string,
   pageCount: number,
 ): void {
-  // ── 복원: 마운트 시 1회 ──
+  // ── 복원: 조건이 충족될 때까지 재시도, 한 번 복원(또는 포기 확정)하면 잠금 ──
+  // - 캐시가 비동기로 로드되는 경우(pageCount 0 → N)를 기다린다
+  // - 단, 기다리는 동안 사용자가 직접 스크롤하면 복원을 포기한다 (화면 가로채기 방지)
   const restoredRef = useRef(false);
   useEffect(() => {
     if (restoredRef.current) return;
-    restoredRef.current = true;
 
     const saved = read();
-    if (
-      saved &&
-      saved.category === category &&
-      saved.pageCount > 0 &&
-      pageCount >= saved.pageCount
-    ) {
-      window.scrollTo(0, saved.offset);
+    // 복원 대상이 아예 없으면 즉시 종료 확정
+    if (!saved || saved.category !== category || saved.pageCount <= 0) {
+      restoredRef.current = true;
+      return;
     }
+
+    // 데이터가 충분히 로드됨 → 복원 (단, 사용자가 이미 스크롤했으면 가로채기 방지)
+    if (pageCount >= saved.pageCount) {
+      restoredRef.current = true;
+      if (window.scrollY === 0) {
+        window.scrollTo(0, saved.offset);
+      }
+      return;
+    }
+
+    // 데이터를 기다리는 중인데 사용자가 이미 스크롤함 → 복원 포기
+    if (window.scrollY > 0) {
+      restoredRef.current = true;
+    }
+    // else: 다음 pageCount 변경 때 재시도
   }, [category, pageCount]);
 
   // ── 저장: 스크롤 시 rAF 쓰로틀 (boolean 플래그 — 동기 rAF 목에서도 안전) ──
