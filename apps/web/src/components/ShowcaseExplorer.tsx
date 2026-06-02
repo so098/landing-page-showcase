@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Category, Showcase, ShowcaseList } from "@melstudio/shared";
 import { useInfiniteShowcases } from "@/lib/queries";
+import useScrollRestoration from "@/hooks/useScrollRestoration";
 import TagBar from "./TagBar";
 import InfiniteShowcaseGrid from "./InfiniteShowcaseGrid";
 import PreviewModal from "./PreviewModal";
@@ -29,6 +30,9 @@ export default function ShowcaseExplorer({
     [showcasesQuery.data],
   );
 
+  // 뒤로가기 스크롤 복원 (React Query 캐시에 데이터가 있을 때만)
+  useScrollRestoration(active, showcasesQuery.data?.pages.length ?? 0);
+
   const tabs: Category[] = useMemo(
     () => [{ id: "all", label: "전체" }, ...categories],
     [categories],
@@ -42,10 +46,16 @@ export default function ShowcaseExplorer({
   const isError = apiDown || showcasesQuery.isError;
   const isLoading = showcasesQuery.isLoading;
 
+  // 카테고리 변경: 스크롤 top 리셋 (저장된 오프셋은 새 카테고리 기준으로 덮어써짐)
+  const handleCategoryChange = (id: string) => {
+    setActive(id);
+    window.scrollTo(0, 0);
+  };
+
   return (
     <>
       <div className="sticky top-0 z-30 -mx-5 mb-10 bg-blush/70 px-5 py-4 backdrop-blur-md">
-        <TagBar categories={tabs} active={active} onChange={setActive} />
+        <TagBar categories={tabs} active={active} onChange={handleCategoryChange} />
       </div>
 
       {isError ? (
