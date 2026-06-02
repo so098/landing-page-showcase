@@ -39,3 +39,19 @@ Object.defineProperty(window, "IntersectionObserver", {
 // scrollIntoView / scrollTo 목
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
 window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+
+// matchMedia 목 — 기본: 아무 쿼리도 매치 안 됨 (모바일 2열).
+// 개별 테스트에서 window.matchMedia를 다시 목킹해 브레이크포인트를 시뮬레이션한다.
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    onchange: null,
+  })),
+});
