@@ -44,7 +44,7 @@ describe("listShowcases", () => {
   });
 
   it("마지막 페이지는 nextCursor가 null", async () => {
-    const page = await listShowcases({ limit: 1000 });
+    const page = await listShowcases({ limit: 2000 });
     expect(page.nextCursor).toBeNull();
   });
 });
