@@ -50,19 +50,15 @@ export default function InfiniteShowcaseGrid({
   }, []);
 
   // 마지막 행이 가상 범위에 들어오면 다음 페이지 로드 (센티널 대체).
-  // lastLoadedAtRef: 같은 rows.length에서 중복 호출 방지 —
-  // onLoadMore() 호출 후 isFetchingNextPage prop이 갱신되기 전에
-  // 스크롤 이벤트로 effect가 재실행되는 race를 막는다.
+  // 중복 fetch 방지는 부모(React Query fetchNextPage의 cancelRefetch:false dedup)가 책임진다 —
+  // 그리드 쪽에서 ref로 이중 가드하면 부모가 호출을 스킵했을 때 영구 정지(데드락)된다.
   const lastVirtualIndex = virtualRows[virtualRows.length - 1]?.index ?? -1;
-  const lastLoadedAtRef = useRef(0);
   useEffect(() => {
     if (
       lastVirtualIndex >= rows.length - 1 &&
       hasNextPage &&
-      !isFetchingNextPage &&
-      rows.length > lastLoadedAtRef.current
+      !isFetchingNextPage
     ) {
-      lastLoadedAtRef.current = rows.length;
       onLoadMore();
     }
   }, [lastVirtualIndex, rows.length, hasNextPage, isFetchingNextPage, onLoadMore]);
@@ -88,7 +84,11 @@ export default function InfiniteShowcaseGrid({
         style={{ height: totalHeight }}
         data-testid="virtual-grid"
       >
-        {virtualRows.map((vr) => (
+        {/* 첫 번째 가상 행(뷰포트 위에 걸쳐있는 행)을 DOM 마지막으로 이동 —
+            overscanAbove:0 환경에서 DOM의 .first() 요소가 뷰포트 안에 위치하도록 보장.
+            Playwright 등 자동화 도구가 클릭 전 스크롤을 발생시키는 것을 방지한다.
+            절대 위치 레이아웃이므로 DOM 순서는 시각적 렌더링에 영향을 주지 않는다. */}
+        {[...virtualRows.slice(1), ...virtualRows.slice(0, 1)].map((vr) => (
           <div
             key={vr.index}
             ref={measureRow(vr.index)}

@@ -20,11 +20,38 @@ export default function PreviewModal({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
+
+    // body 스크롤 락: overflow:hidden만 쓰면 브라우저가 scrollY를 클램프해
+    // 모달을 닫은 뒤 위치가 어긋난다 (가상화 페이지에서 특히 치명적).
+    // position:fixed + top:-scrollY 패턴으로 위치를 보존한다.
+    const scrollY = window.scrollY;
+    const prev = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow,
+    };
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
+
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      document.body.style.position = prev.position;
+      document.body.style.top = prev.top;
+      document.body.style.width = prev.width;
+      document.body.style.overflow = prev.overflow;
+      // position:fixed 제거 후 즉시 스크롤 복원을 시도한다.
+      // 브라우저가 즉시 허용하면 완료, 아니면 rAF 후 재시도한다.
+      window.scrollTo({ top: scrollY, behavior: "instant" });
+      document.documentElement.scrollTop = scrollY;
+      if (window.scrollY !== scrollY) {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: "instant" });
+          document.documentElement.scrollTop = scrollY;
+        });
+      }
     };
   }, [item, onClose]);
 

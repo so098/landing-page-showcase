@@ -72,9 +72,9 @@ export default function ShowcaseExplorer({
           hasNextPage={showcasesQuery.hasNextPage ?? false}
           isFetchingNextPage={showcasesQuery.isFetchingNextPage}
           onLoadMore={() => {
-            if (!showcasesQuery.isFetchingNextPage) {
-              void showcasesQuery.fetchNextPage();
-            }
+            // cancelRefetch: false — 이미 fetch 중이면 no-op (React Query 내장 dedup).
+            // 자체 가드로 호출을 스킵하면 그리드 쪽 트리거와 어긋나 데드락 위험이 있다.
+            void showcasesQuery.fetchNextPage({ cancelRefetch: false });
           }}
         />
       )}
