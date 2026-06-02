@@ -55,3 +55,37 @@ Object.defineProperty(window, "matchMedia", {
     onchange: null,
   })),
 });
+
+// ResizeObserver 목 (행 높이 실측용) — 테스트에서 인스턴스에 접근할 수 있게 전역 목록 유지
+class MockResizeObserver {
+  static instances: MockResizeObserver[] = [];
+  callback: ResizeObserverCallback;
+  observed: Element[] = [];
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+    MockResizeObserver.instances.push(this);
+  }
+  observe(el: Element) {
+    this.observed.push(el);
+  }
+  unobserve() {}
+  disconnect() {
+    this.observed = [];
+  }
+  // 테스트 헬퍼: 측정값을 강제로 발생시킨다
+  trigger(height: number) {
+    this.callback(
+      this.observed.map((el) => ({
+        target: el,
+        contentRect: { height } as DOMRectReadOnly,
+      })) as unknown as ResizeObserverEntry[],
+      this as unknown as ResizeObserver,
+    );
+  }
+}
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: MockResizeObserver,
+});
+// 테스트에서 import 없이 접근: (window as any).__MockResizeObserver
+(window as unknown as Record<string, unknown>).__MockResizeObserver = MockResizeObserver;
