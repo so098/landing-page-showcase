@@ -8,18 +8,23 @@ export default function ShowcaseCard({
   index,
   categoryLabel,
   onOpen,
+  animate = true,
 }: {
   item: Showcase;
   index: number;
   categoryLabel: string;
   onOpen: (item: Showcase) => void;
+  /** false면 fade-up 애니메이션 없이 즉시 표시 (가상화 재마운트용) */
+  animate?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={() => onOpen(item)}
-      className="group relative flex flex-col text-left animate-fade-up focus:outline-none"
-      style={{ animationDelay: `${index * 70}ms` }}
+      className={`group relative flex flex-col text-left focus:outline-none ${
+        animate ? "animate-fade-up" : ""
+      }`}
+      style={animate ? { animationDelay: `${index * 70}ms` } : undefined}
       aria-label={`${item.title} 미리보기 열기`}
     >
       {/* 브라우저 프레임 썸네일 */}
