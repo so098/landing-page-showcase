@@ -49,14 +49,20 @@ export default function InfiniteShowcaseGrid({
     isFirstMountRef.current = false;
   }, []);
 
-  // 마지막 행이 가상 범위에 들어오면 다음 페이지 로드 (센티널 대체)
+  // 마지막 행이 가상 범위에 들어오면 다음 페이지 로드 (센티널 대체).
+  // lastLoadedAtRef: 같은 rows.length에서 중복 호출 방지 —
+  // onLoadMore() 호출 후 isFetchingNextPage prop이 갱신되기 전에
+  // 스크롤 이벤트로 effect가 재실행되는 race를 막는다.
   const lastVirtualIndex = virtualRows[virtualRows.length - 1]?.index ?? -1;
+  const lastLoadedAtRef = useRef(0);
   useEffect(() => {
     if (
       lastVirtualIndex >= rows.length - 1 &&
       hasNextPage &&
-      !isFetchingNextPage
+      !isFetchingNextPage &&
+      rows.length > lastLoadedAtRef.current
     ) {
+      lastLoadedAtRef.current = rows.length;
       onLoadMore();
     }
   }, [lastVirtualIndex, rows.length, hasNextPage, isFetchingNextPage, onLoadMore]);

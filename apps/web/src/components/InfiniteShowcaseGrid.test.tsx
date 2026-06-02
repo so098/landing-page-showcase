@@ -104,4 +104,35 @@ describe("InfiniteShowcaseGrid (가상화)", () => {
     render(<InfiniteShowcaseGrid {...defaultProps} items={[]} />);
     expect(screen.getByText(/준비된 페이지가 없어요/)).toBeTruthy();
   });
+
+  it("같은 데이터 길이에서는 onLoadMore를 중복 호출하지 않는다 (race 가드)", () => {
+    const onLoadMore = vi.fn();
+    render(
+      <InfiniteShowcaseGrid
+        {...defaultProps}
+        items={ITEMS.slice(0, 24)}
+        hasNextPage={true}
+        onLoadMore={onLoadMore}
+      />,
+    );
+
+    // 끝까지 스크롤 → 1회 호출
+    act(() => {
+      setScrollY(100_000);
+      window.dispatchEvent(new Event("scroll"));
+    });
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    // isFetchingNextPage가 아직 false인 상태에서 추가 스크롤 이벤트 발생 (race 시뮬레이션)
+    // → 데이터 길이가 안 변했으므로 다시 호출되면 안 됨
+    act(() => {
+      setScrollY(99_000);
+      window.dispatchEvent(new Event("scroll"));
+    });
+    act(() => {
+      setScrollY(100_000);
+      window.dispatchEvent(new Event("scroll"));
+    });
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
 });
