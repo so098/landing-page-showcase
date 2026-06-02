@@ -79,7 +79,7 @@ export const SEED_SHOWCASES: {
 // ── 무한스크롤 체감용 추가 생성 데이터 ──────────────────────────
 // 결정적(deterministic) 생성: 난수 없이 인덱스 조합으로만 만들어 시드 멱등성을 유지한다.
 
-const GEN_PER_CATEGORY = 15;
+const GEN_PER_CATEGORY = 125;
 
 const GEN_PREFIXES = [
   "루미", "오드", "베르", "솔레", "마노", "허브", "노바", "유노",
@@ -123,9 +123,12 @@ export function generateShowcases(
     const suffixes = GEN_SUFFIXES[cat.slug];
     const blurbs = GEN_BLURBS[cat.slug];
     for (let i = 0; i < perCategory; i++) {
+      // 제목 조합(프리픽스 15종)이 한 바퀴 돌면 "2호점", "3호점"…으로 구분
+      const round = Math.floor(i / GEN_PREFIXES.length);
+      const baseTitle = `${GEN_PREFIXES[i % GEN_PREFIXES.length]} ${suffixes[i % suffixes.length]}`;
       out.push({
         slug: `${cat.slug}-gen-${i + 1}`,
-        title: `${GEN_PREFIXES[i % GEN_PREFIXES.length]} ${suffixes[i % suffixes.length]}`,
+        title: round === 0 ? baseTitle : `${baseTitle} ${round + 1}호점`,
         category: cat.slug,
         blurb: blurbs[i % blurbs.length],
         accent: GEN_ACCENTS[(catIdx + i) % GEN_ACCENTS.length],
@@ -136,5 +139,5 @@ export function generateShowcases(
   return out;
 }
 
-// 시드에 사용하는 전체 목록 (원본 40 + 생성 120 = 160)
+// 시드에 사용하는 전체 목록 (원본 39 + 생성 1,000 = 1,039)
 export const ALL_SEED_SHOWCASES = [...SEED_SHOWCASES, ...generateShowcases()];

@@ -16,20 +16,21 @@ async function main() {
     categoryIdBySlug.set(c.slug, created.id);
   }
 
-  for (const s of ALL_SEED_SHOWCASES) {
-    const categoryId = categoryIdBySlug.get(s.category);
-    if (!categoryId) throw new Error(`Unknown category slug: ${s.category}`);
-    await prisma.showcase.create({
-      data: {
+  // createMany: 1,039개를 한 번에 삽입 (개별 create 루프는 너무 느림)
+  await prisma.showcase.createMany({
+    data: ALL_SEED_SHOWCASES.map((s) => {
+      const categoryId = categoryIdBySlug.get(s.category);
+      if (!categoryId) throw new Error(`Unknown category slug: ${s.category}`);
+      return {
         slug: s.slug,
         title: s.title,
         blurb: s.blurb,
         accent: s.accent,
         layout: s.layout,
         categoryId,
-      },
-    });
-  }
+      };
+    }),
+  });
 
   const cats = await prisma.category.count();
   const items = await prisma.showcase.count();
