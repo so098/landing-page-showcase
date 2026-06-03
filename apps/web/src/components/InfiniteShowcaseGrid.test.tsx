@@ -100,6 +100,14 @@ describe("InfiniteShowcaseGrid (가상화)", () => {
     expect(screen.getByText(/불러오는 중/)).toBeTruthy();
   });
 
+  it("행 그리드가 columns 단일 소스에서 gridTemplateColumns를 도출한다", () => {
+    const { container } = render(<InfiniteShowcaseGrid {...defaultProps} />);
+    // jsdom matchMedia 기본 → useColumnCount=2열
+    const rowGrid = container.querySelector('[style*="grid-template-columns"]') as HTMLElement | null;
+    expect(rowGrid).not.toBeNull();
+    expect(rowGrid!.style.gridTemplateColumns).toBe("repeat(2, minmax(0, 1fr))");
+  });
+
   it("빈 목록이면 빈 상태 UI를 보여준다", () => {
     render(<InfiniteShowcaseGrid {...defaultProps} items={[]} />);
     expect(screen.getByText(/준비된 페이지가 없어요/)).toBeTruthy();

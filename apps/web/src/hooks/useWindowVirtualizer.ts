@@ -20,6 +20,7 @@ type Options = {
   rowCount: number;
   estimateHeight: number;
   overscan?: number;
+  resetKey?: string | number;
 };
 
 type Result = {
@@ -39,6 +40,7 @@ export default function useWindowVirtualizer({
   rowCount,
   estimateHeight,
   overscan = 3,
+  resetKey,
 }: Options): Result {
   const measuredRef = useRef(new Map<number, number>());
   const observersRef = useRef(new Map<number, ResizeObserver>());
@@ -139,6 +141,16 @@ export default function useWindowVirtualizer({
     },
     [estimateHeight, scheduleUpdate],
   );
+
+  // resetKey(카테고리/열 전환 등)가 바뀌면 측정 캐시를 전부 무효화한다.
+  // 행 인덱스→높이/콜백 매핑이 새 데이터에 더 이상 유효하지 않기 때문.
+  useEffect(() => {
+    measuredRef.current.clear();
+    observersRef.current.forEach((o) => o.disconnect());
+    observersRef.current.clear();
+    callbacksRef.current.clear();
+    setTick((n) => n + 1);
+  }, [resetKey]);
 
   // 언마운트 시 옵저버 전체 해제
   useEffect(() => {

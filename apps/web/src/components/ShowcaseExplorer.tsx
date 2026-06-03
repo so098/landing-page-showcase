@@ -67,6 +67,7 @@ export default function ShowcaseExplorer({
       ) : (
         <InfiniteShowcaseGrid
           items={items}
+          resetKey={active}
           labelOf={labelOf}
           onOpen={setSelected}
           hasNextPage={showcasesQuery.hasNextPage ?? false}

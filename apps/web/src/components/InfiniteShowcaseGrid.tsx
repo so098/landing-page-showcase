@@ -17,6 +17,7 @@ export default function InfiniteShowcaseGrid({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
+  resetKey,
 }: {
   items: Showcase[];
   labelOf: (categorySlug: string) => string;
@@ -24,6 +25,7 @@ export default function InfiniteShowcaseGrid({
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
+  resetKey?: string | number;
 }) {
   const columns = useColumnCount();
 
@@ -41,6 +43,7 @@ export default function InfiniteShowcaseGrid({
       rowCount: rows.length,
       estimateHeight: ESTIMATE_ROW_HEIGHT,
       overscan: 3,
+      resetKey: `${resetKey ?? ""}:${columns}`,
     });
 
   // 첫 마운트 여부 — 첫 페인트의 카드들만 fade-up stagger 적용
@@ -96,7 +99,12 @@ export default function InfiniteShowcaseGrid({
             style={{ transform: `translateY(${vr.start}px)` }}
           >
             {/* 행 내부: 기존 그리드 클래스 재사용. pb-5가 행 간격(gap) 역할 */}
-            <div className="grid grid-cols-2 gap-5 pb-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div
+              className="grid gap-5 pb-5"
+              style={{
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              }}
+            >
               {rows[vr.index]?.map((item, colIdx) => (
                 <ShowcaseCard
                   key={item.id}

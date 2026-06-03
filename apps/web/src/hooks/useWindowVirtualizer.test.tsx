@@ -87,6 +87,29 @@ describe("useWindowVirtualizer", () => {
     expect(result.current.measureRow(4)).not.toBe(cb1);
   });
 
+  it("resetKey가 바뀌면 측정 캐시가 초기화된다 (카테고리/열 전환)", () => {
+    const { result, rerender } = renderHook(
+      ({ resetKey }) =>
+        useWindowVirtualizer({ rowCount: 10, estimateHeight: 100, overscan: 2, resetKey }),
+      { initialProps: { resetKey: "all:2" } },
+    );
+    expect(result.current.totalHeight).toBe(1000);
+
+    // 0번 행을 200px로 실측 → totalHeight 1100
+    const el = document.createElement("div");
+    act(() => {
+      result.current.measureRow(0)(el);
+      const MockRO = (window as unknown as Record<string, unknown>)
+        .__MockResizeObserver as { instances: { trigger: (h: number) => void }[] };
+      MockRO.instances[MockRO.instances.length - 1].trigger(200);
+    });
+    expect(result.current.totalHeight).toBe(1100);
+
+    // resetKey 변경(카테고리 전환) → 측정 캐시 초기화 → 추정값 기반으로 복귀
+    rerender({ resetKey: "cafe:2" });
+    expect(result.current.totalHeight).toBe(1000);
+  });
+
   it("rowCount가 줄어들면 (필터 변경) 범위가 클램프된다", () => {
     const { result, rerender } = renderHook(
       ({ rowCount }) =>
