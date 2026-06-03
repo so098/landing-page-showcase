@@ -44,7 +44,7 @@
 
 - [x] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before) — [측정 기록](../../perf/rsc-migration-before-after.md) (CSR 커밋 `338fc00` 기준: 홈 Perf 57 / FCP 8.07s / LCP 9.13s)
 - [x] 메인 페이지(`/`): 쇼케이스 데이터를 서버 컴포넌트에서 fetch (ISR) → 클라이언트 인터랙션(필터/슬라이더/모달)만 클라이언트 컴포넌트로 분리
-- [ ] **홈 리뷰 리스트 신규**: Prisma `Review` 모델 + 시드 + `GET /api/reviews` + 홈 섹션 (별점/내용/작성자) — ISR + 리뷰 작성 시 `revalidateTag("reviews")`
+- [x] **홈 리뷰 리스트 신규**: Prisma `Review` 모델 + 시드 + `GET /api/reviews` + 홈 섹션 (별점/내용/작성자) — ISR + 리뷰 작성 시 `updateTag("reviews")` (Next 16에서 단일 인자 revalidateTag deprecated → updateTag로 구현. 자율 루프 1회차, QA 허점 2건 수정 — [기록](../../고친허점.md))
 - [x] `/showcase`: 첫 페이지를 서버에서 렌더(ISR) + 이후 페이지만 클라이언트 무한스크롤 (하이브리드)
 - [x] `/guide`: 완전 정적(서버 컴포넌트만, 인터랙션은 아코디언뿐)
 - [ ] '로그인시 개인 내정보 페이지 만들기 - 내정보 페이지 안에는 어떤 랜딩페이지를 만드는지, 랜딩페이지 진행도, 가격, 리뷰작성 버튼이 보여야 함
