@@ -3,6 +3,7 @@ import {
   ShowcaseListSchema,
   ReviewListSchema,
   type Category,
+  type Showcase,
   type ShowcaseList,
   type ReviewList,
 } from "@melstudio/shared";
@@ -32,6 +33,17 @@ export async function fetchShowcases(
   const res = await fetch(`${BASE}/api/showcases?${q.toString()}`, init);
   if (!res.ok) throw new Error(`showcases ${res.status}`);
   return ShowcaseListSchema.parse(await res.json());
+}
+
+// slug(=Showcase.id)로 단일 쇼케이스 조회. 전용 단건 엔드포인트가 아직 없어
+// 목록을 재사용한다 (queries.ts의 useShowcaseBySlug와 같은 전략). 서버에서
+// generateMetadata가 호출하므로 ISR 캐시 옵션을 넘길 수 있다.
+export async function fetchShowcaseBySlug(
+  slug: string,
+  init?: RequestInit,
+): Promise<Showcase | null> {
+  const { items } = await fetchShowcases({ limit: 100 }, init);
+  return items.find((s) => s.id === slug) ?? null;
 }
 
 export async function fetchReviews(

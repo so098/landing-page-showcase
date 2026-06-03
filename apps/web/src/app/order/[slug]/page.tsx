@@ -1,73 +1,44 @@
-"use client";
+import type { Metadata } from "next";
+import { fetchShowcaseBySlug } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
+import OrderWithShowcaseClient from "./OrderWithShowcaseClient";
 
-import { Suspense, useMemo } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useShowcaseBySlug, useCategories } from "@/lib/queries";
-import SiteHeader from "@/components/SiteHeader";
-import OrderForm from "@/components/OrderForm";
+// 주문 진입 페이지 — 동적 metadata의 대표 사례.
+// 클라이언트 상호작용(폼/쿼리스트링)은 OrderWithShowcaseClient(클라이언트 섬)에 두고,
+// page는 서버 컴포넌트로 남겨 generateMetadata를 export한다.
+// (클라이언트 컴포넌트는 metadata를 export할 수 없으므로 분리한 것)
 
-// 쇼케이스(디자인)를 고른 뒤 진입하는 주문서.
-// ?edit=1 : 이전 주문서 내용을 불러와 수정
-function OrderWithShowcase() {
-  const params = useParams<{ slug: string }>();
-  const searchParams = useSearchParams();
-  const slug = params.slug;
-  const restore = searchParams.get("edit") === "1";
-  const mode = searchParams.get("mode") === "human" ? "human" : "ai";
+type Props = { params: Promise<{ slug: string }> };
 
-  const { showcase, isLoading, isError } = useShowcaseBySlug(slug);
-  const categoriesQuery = useCategories();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
 
-  const categoryLabel = useMemo(() => {
-    if (!showcase) return "";
-    const cat = categoriesQuery.data?.find((c) => c.id === showcase.category);
-    return cat?.label ?? showcase.category;
-  }, [categoriesQuery.data, showcase]);
-
-  if (isError) {
-    return (
-      <p className="py-24 text-center text-wine/60">
-        데이터를 불러오지 못했어요. API 서버(4000)가 켜져 있는지 확인해 주세요.
-      </p>
-    );
+  // slug 기반으로 디자인을 찾아 제목/설명을 만든다. 못 찾거나 API가 꺼져 있으면 폴백.
+  let showcase = null;
+  try {
+    showcase = await fetchShowcaseBySlug(slug, { next: { revalidate: 60 } });
+  } catch {
+    // API 다운 — 폴백 메타데이터로 진행 (페이지는 클라이언트에서 다시 로드 시도)
   }
-  if (isLoading) {
-    return <p className="py-24 text-center text-wine/50">불러오는 중…</p>;
-  }
+
+  // 주문 페이지는 개인화 흐름(주문서 작성)이라 검색에 노출하지 않는다.
   if (!showcase) {
-    return (
-      <div className="py-24 text-center">
-        <p className="text-wine/60">해당 디자인을 찾을 수 없어요.</p>
-        <Link
-          href="/showcase"
-          className="mt-5 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-crimson"
-        >
-          쇼케이스 둘러보기
-        </Link>
-      </div>
-    );
+    return buildMetadata({
+      title: "주문서 작성",
+      description: "디자인을 고르고 주문서를 작성해 보세요.",
+      path: `/order/${slug}`,
+      noindex: true,
+    });
   }
 
-  return (
-    <OrderForm
-      showcase={showcase}
-      categoryLabel={categoryLabel}
-      mode={mode}
-      restore={restore}
-    />
-  );
+  return buildMetadata({
+    title: `${showcase.title} 주문하기`,
+    description: `${showcase.title} 디자인으로 내 랜딩페이지를 주문해 보세요. ${showcase.blurb}`,
+    path: `/order/${slug}`,
+    noindex: true,
+  });
 }
 
 export default function OrderWithShowcasePage() {
-  return (
-    <div className="relative z-10 min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-5xl px-5 pb-24 pt-4">
-        <Suspense fallback={<p className="py-24 text-center text-wine/50">불러오는 중…</p>}>
-          <OrderWithShowcase />
-        </Suspense>
-      </main>
-    </div>
-  );
+  return <OrderWithShowcaseClient />;
 }

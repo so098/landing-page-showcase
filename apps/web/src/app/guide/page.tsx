@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { buildMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = buildMetadata({
+  title: "이용 안내",
+  description:
+    "디자인을 고르고 주문서를 작성하면 AI가 랜딩페이지를 만들어 드려요. 제작 흐름과 가격, 자주 묻는 질문을 확인하세요.",
+  path: "/guide",
+});
 
 // 이용 안내 — 서비스 흐름을 그림(단계 + 비교 카드)으로 설명하는 페이지.
 // 인터랙션이 없는 콘텐츠라 서버 컴포넌트(완전 정적, SSG)로 렌더한다.

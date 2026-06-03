@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import type { Category, Showcase, Review } from "@melstudio/shared";
 import { fetchCategories, fetchShowcases, fetchReviews } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import SiteHeader from "@/components/SiteHeader";
 import HomeShowcaseSection from "@/components/HomeShowcaseSection";
 import ReviewSection from "@/components/ReviewSection";
+
+// 홈은 사이트 기본 제목/설명을 그대로 쓰되, canonical("/")과 OG를 명시한다.
+export const metadata: Metadata = buildMetadata({ path: "/" });
 
 // ── 렌더링 전략: ISR (60초) ──
 // 쇼케이스는 관리자만 추가하고 모든 방문자에게 같은 내용이므로,

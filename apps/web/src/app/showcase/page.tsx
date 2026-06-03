@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import type { Category, ShowcaseList } from "@melstudio/shared";
 import { fetchCategories, fetchShowcases } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import SiteHeader from "@/components/SiteHeader";
 import ShowcaseExplorer from "@/components/ShowcaseExplorer";
+
+export const metadata: Metadata = buildMetadata({
+  title: "쇼케이스 전체 보기",
+  description:
+    "업종 태그를 골라 카페·병원·헬스장 등 업종별 랜딩페이지 디자인을 모두 둘러보세요.",
+  path: "/showcase",
+});
 
 // ── 렌더링 전략: ISR (60초) + 클라이언트 무한스크롤 (하이브리드) ──
 // 첫 12개는 서버에서 정적 생성해 LCP를 줄이고 (HTML에 데이터 포함),
