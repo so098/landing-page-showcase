@@ -63,7 +63,8 @@ export const MATERIAL_TYPES = [
 ] as const;
 
 export const OrderFormSchema = z.object({
-  showcaseId: z.string().min(1, "쇼케이스를 선택해 주세요."),
+  // 포트폴리오(쇼케이스)에서 디자인을 고른 경우에만 존재
+  showcaseId: z.string().optional(),
 
   // ── 사장님 정보 ──
   businessName: z.string().trim().min(1, "업체명(브랜드명)을 입력해 주세요."),
