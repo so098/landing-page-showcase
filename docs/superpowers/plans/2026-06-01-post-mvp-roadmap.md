@@ -41,7 +41,7 @@
 | 마이페이지 / 채팅 | **클라이언트** | 개인화 + 실시간 |
 
 **작업**
-- [ ] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before)
+- [x] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before) — [측정 기록](../../perf/rsc-migration-before-after.md) (CSR 커밋 `629a40a` 기준: 홈 Perf 57 / FCP 8.07s / LCP 9.13s)
 - [x] 메인 페이지(`/`): 쇼케이스 데이터를 서버 컴포넌트에서 fetch (ISR) → 클라이언트 인터랙션(필터/슬라이더/모달)만 클라이언트 컴포넌트로 분리
 - [ ] **홈 리뷰 리스트 신규**: Prisma `Review` 모델 + 시드 + `GET /api/reviews` + 홈 섹션 (별점/내용/작성자) — ISR + 리뷰 작성 시 `revalidateTag("reviews")`
 - [x] `/showcase`: 첫 페이지를 서버에서 렌더(ISR) + 이후 페이지만 클라이언트 무한스크롤 (하이브리드)
@@ -61,21 +61,23 @@
 
 ---
 
-## 2순위: 무한스크롤 가상화 (react-virtual) ★
+## 2순위: 무한스크롤 가상화 (직접 구현) ★
 
 > 159개 → 수천 개여도 부드러운 스크롤. "대량 리스트 렌더링" 면접 단골 질문의 답.
+> 설계서: [2026-06-02-showcase-virtualization-design.md](../specs/2026-06-02-showcase-virtualization-design.md)
 
-**작업**
-- [ ] 측정 먼저: 현재 `/showcase`에서 159개 전부 로드 시 DOM 노드 수 / 스크롤 FPS 기록 (Before)
-- [ ] `@tanstack/react-virtual` 도입 — InfiniteShowcaseGrid에 행 단위 가상화 적용
-- [ ] 시드 데이터를 1,000개+로 늘려서 가상화 효과 극대화 (생성기 perCategory 조정)
-- [ ] 스크롤 위치 복원 (모달 열었다 닫아도, 뒤로가기 해도 위치 유지)
-- [ ] 측정: After — DOM 노드 수 일정하게 유지되는지, FPS 기록 → README
+**작업** (순서 변경: 시드 먼저 확장 → 동일 규모로 Before/After 비교)
+- [x] 시드 데이터를 1,000개+로 확장 (생성기 perCategory 조정 + createMany)
+- [x] 측정 먼저: 1,000개 전부 로드 시 DOM 노드 수 / 스크롤 성능 기록 (Before)
+- [x] **윈도우 가상화 직접 구현** (라이브러리 ❌) — 순수 계산 코어 + React 훅 + InfiniteShowcaseGrid 행 단위 적용
+- [x] 스크롤 위치 복원 (모달 열었다 닫아도, 뒤로가기 해도 위치 유지)
+- [x] 측정: After — DOM 노드 수 일정하게 유지되는지, 스크롤 성능 기록 → README
 
 **테스트 (이 단계에 포함)**
-- [ ] 가상화 그리드 RTL 테스트: 보이는 행만 렌더되는지, 스크롤 시 아이템 교체되는지
-- [ ] useInfiniteShowcases 훅 테스트: 페이지 평탄화, 커서 연결, 카테고리 변경 시 리셋
-- [ ] Playwright E2E: 끝까지 스크롤 → 전체 로드 → "전부 봤어요" 표시
+- [x] 가상화 코어 단위 테스트: 오프셋/가시 범위 계산 (DOM 불필요)
+- [x] 가상화 그리드 RTL 테스트: 보이는 행만 렌더되는지, 스크롤 시 아이템 교체되는지
+- [x] useInfiniteShowcases 훅 테스트: 페이지 평탄화, 커서 연결, 카테고리 변경 시 리셋
+- [x] Playwright E2E: 끝까지 스크롤 → 전체 로드 → "전부 봤어요" 표시
 
 **사람이 확인할 것**
 1. 1,000개 이상에서도 스크롤이 버벅이지 않음
