@@ -1,8 +1,10 @@
 import {
   CategorySchema,
   ShowcaseListSchema,
+  ReviewListSchema,
   type Category,
   type ShowcaseList,
+  type ReviewList,
 } from "@melstudio/shared";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -30,4 +32,15 @@ export async function fetchShowcases(
   const res = await fetch(`${BASE}/api/showcases?${q.toString()}`, init);
   if (!res.ok) throw new Error(`showcases ${res.status}`);
   return ShowcaseListSchema.parse(await res.json());
+}
+
+export async function fetchReviews(
+  params: { limit?: number },
+  init?: RequestInit,
+): Promise<ReviewList> {
+  const q = new URLSearchParams();
+  q.set("limit", String(params.limit ?? 6));
+  const res = await fetch(`${BASE}/api/reviews?${q.toString()}`, init);
+  if (!res.ok) throw new Error(`reviews ${res.status}`);
+  return ReviewListSchema.parse(await res.json());
 }

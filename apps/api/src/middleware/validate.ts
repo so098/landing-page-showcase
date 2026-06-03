@@ -30,3 +30,23 @@ export function validateQuery(schema: ZodTypeAny) {
     next();
   };
 }
+
+export function validateBody(schema: ZodTypeAny) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return next(
+        new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          parsed.error.issues[0]?.message ?? "Invalid body",
+        ),
+      );
+    }
+    (req as Request & { valid?: { body?: unknown } }).valid = {
+      ...(req as Request & { valid?: { body?: unknown } }).valid,
+      body: parsed.data,
+    };
+    next();
+  };
+}

@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { LAYOUTS } from "@melstudio/shared";
+import { LAYOUTS, ReviewCreateSchema } from "@melstudio/shared";
 import {
   SEED_CATEGORIES,
   SEED_SHOWCASES,
   generateShowcases,
   ALL_SEED_SHOWCASES,
+  SEED_REVIEWS,
 } from "./seed-data";
 
 describe("generateShowcases", () => {
@@ -46,5 +47,27 @@ describe("generateShowcases", () => {
 
   it("같은 입력이면 같은 결과를 낸다 (결정적)", () => {
     expect(generateShowcases()).toEqual(generateShowcases());
+  });
+});
+
+describe("SEED_REVIEWS", () => {
+  it("리뷰 10개를 노출한다", () => {
+    expect(SEED_REVIEWS.length).toBe(10);
+  });
+
+  it("모든 리뷰가 ReviewCreateSchema(이름 2~10자, 내용 10~500자)를 통과한다", () => {
+    for (const r of SEED_REVIEWS) {
+      expect(
+        ReviewCreateSchema.safeParse({ authorName: r.authorName, body: r.body }).success,
+        `invalid review: ${r.authorName}`,
+      ).toBe(true);
+    }
+  });
+
+  it("daysAgo가 결정적(난수 아님)으로 분산돼 있다", () => {
+    // 난수였다면 두 번 import해도 같을 수 없음 — 상수 배열이므로 항상 동일
+    const days = SEED_REVIEWS.map((r) => r.daysAgo);
+    expect(days.every((d) => Number.isInteger(d) && d > 0)).toBe(true);
+    expect(new Set(days).size).toBe(days.length); // 모두 서로 다른 날짜
   });
 });

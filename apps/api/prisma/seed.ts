@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { SEED_CATEGORIES, ALL_SEED_SHOWCASES } from "../src/data/seed-data.js";
+import { SEED_CATEGORIES, ALL_SEED_SHOWCASES, SEED_REVIEWS } from "../src/data/seed-data.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
   // 멱등: 기존 데이터 삭제 후 재삽입
+  await prisma.review.deleteMany();
   await prisma.showcase.deleteMany();
   await prisma.category.deleteMany();
 
@@ -32,9 +33,20 @@ async function main() {
     }),
   });
 
+  // 리뷰: daysAgo로 작성일을 결정적으로 분산 (난수 금지 — 멱등성 유지)
+  const now = Date.now();
+  await prisma.review.createMany({
+    data: SEED_REVIEWS.map((r) => ({
+      authorName: r.authorName,
+      body: r.body,
+      createdAt: new Date(now - r.daysAgo * 24 * 60 * 60 * 1000),
+    })),
+  });
+
   const cats = await prisma.category.count();
   const items = await prisma.showcase.count();
-  console.log(`[seed] categories=${cats}, showcases=${items}`);
+  const reviews = await prisma.review.count();
+  console.log(`[seed] categories=${cats}, showcases=${items}, reviews=${reviews}`);
 }
 
 main()

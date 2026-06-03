@@ -1,7 +1,8 @@
-import type { Category, Showcase } from "@melstudio/shared";
-import { fetchCategories, fetchShowcases } from "@/lib/api";
+import type { Category, Showcase, Review } from "@melstudio/shared";
+import { fetchCategories, fetchShowcases, fetchReviews } from "@/lib/api";
 import SiteHeader from "@/components/SiteHeader";
 import HomeShowcaseSection from "@/components/HomeShowcaseSection";
+import ReviewSection from "@/components/ReviewSection";
 
 // ── 렌더링 전략: ISR (60초) ──
 // 쇼케이스는 관리자만 추가하고 모든 방문자에게 같은 내용이므로,
@@ -26,8 +27,23 @@ async function loadHomeData(): Promise<{
   }
 }
 
+// 리뷰는 별도 fetch — "reviews" 태그를 달아 revalidateTag("reviews")로만 무효화.
+// 페이지 ISR(60s)이 재생성돼도 리뷰 데이터는 태그가 무효화되지 않는 한 캐시 재사용.
+// API 다운 시 빈 배열 → ReviewSection이 섹션을 숨김 (홈 전체는 정상 렌더).
+async function loadReviews(): Promise<Review[]> {
+  try {
+    const { items } = await fetchReviews({ limit: 6 }, { next: { tags: ["reviews"] } });
+    return items;
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const { categories, showcases, apiDown } = await loadHomeData();
+  const [{ categories, showcases, apiDown }, reviews] = await Promise.all([
+    loadHomeData(),
+    loadReviews(),
+  ]);
 
   return (
     <div className="relative z-10 min-h-screen">
@@ -87,6 +103,9 @@ export default async function Home() {
           apiDown={apiDown}
         />
       </section>
+
+      {/* ── 고객 리뷰 (서버 렌더 — 데이터가 HTML에 포함됨) ── */}
+      <ReviewSection reviews={reviews} />
 
       {/* ── 푸터 (서버 렌더) ── */}
       <footer className="border-t border-rose/10 bg-cream/60">

@@ -29,6 +29,28 @@ export const ShowcaseListSchema = z.object({
 });
 export type ShowcaseList = z.infer<typeof ShowcaseListSchema>;
 
+// ── 홈 리뷰 ──
+
+export const ReviewSchema = z.object({
+  id: z.string(),
+  authorName: z.string(), // 서버에서 마스킹된 이름 ("김*수") — 풀네임은 응답에 노출 안 함
+  body: z.string(),
+  createdAt: z.string(), // ISO 8601
+});
+export type Review = z.infer<typeof ReviewSchema>;
+
+export const ReviewListSchema = z.object({
+  items: z.array(ReviewSchema),
+});
+export type ReviewList = z.infer<typeof ReviewListSchema>;
+
+// POST 입력 검증 — web 폼(Server Action)과 api 라우트가 공유하는 단일 계약
+export const ReviewCreateSchema = z.object({
+  authorName: z.string().min(2, "이름은 2자 이상이어야 해요").max(10, "이름은 10자 이하여야 해요"),
+  body: z.string().min(10, "내용은 10자 이상이어야 해요").max(500, "내용은 500자 이하여야 해요"),
+});
+export type ReviewCreate = z.infer<typeof ReviewCreateSchema>;
+
 // ── ④ 실시간 채팅 ──
 
 export const SENDER_TYPES = ["CUSTOMER", "ADMIN"] as const;

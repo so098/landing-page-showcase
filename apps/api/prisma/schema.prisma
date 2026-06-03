@@ -32,6 +32,17 @@ model Showcase {
   @@index([categoryId])
 }
 
+// ── 홈 리뷰 ──
+
+model Review {
+  id         String   @id @default(cuid())
+  authorName String // 풀네임 저장 — 응답 시에만 마스킹
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // ── ④ 실시간 채팅 ──
 
 model ChatRoom {

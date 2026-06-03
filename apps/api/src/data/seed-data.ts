@@ -141,3 +141,19 @@ export function generateShowcases(
 
 // 시드에 사용하는 전체 목록 (원본 39 + 생성 1,000 = 1,039)
 export const ALL_SEED_SHOWCASES = [...SEED_SHOWCASES, ...generateShowcases()];
+
+// ── 홈 리뷰 시드 ──
+// 풀네임으로 저장 (응답 시 서버에서 마스킹). 업종을 다양하게 섞었다.
+// daysAgo: 기준일(시드 실행 시점)로부터 며칠 전 — 난수 대신 결정적 분산으로 멱등성 유지.
+export const SEED_REVIEWS: { authorName: string; body: string; daysAgo: number }[] = [
+  { authorName: "김민수", body: "카페 오픈 준비로 정신없었는데, 원하는 분위기를 정확히 잡아주셨어요. 손님들 반응이 정말 좋습니다.", daysAgo: 1 },
+  { authorName: "이서연", body: "필라테스 스튜디오 예약 페이지를 맡겼는데, 예약 전환이 눈에 띄게 늘었어요. 모바일 화면이 특히 깔끔합니다.", daysAgo: 3 },
+  { authorName: "박지훈", body: "치과 홈페이지를 새로 만들었습니다. 진료 안내가 한눈에 들어와서 전화 문의가 줄고 예약이 늘었어요.", daysAgo: 5 },
+  { authorName: "최유진", body: "네일샵 포트폴리오 페이지가 너무 예뻐요. 인스타에서 들어온 손님들이 바로 예약을 남겨주십니다.", daysAgo: 8 },
+  { authorName: "정현우", body: "코딩 부트캠프 모집 페이지를 만들었는데, 신청서 작성까지 흐름이 자연스러워서 등록률이 올랐습니다.", daysAgo: 11 },
+  { authorName: "강수아", body: "플라워 정기구독 랜딩페이지 제작했어요. 사진이 돋보이게 배치돼서 브랜드 느낌이 확 살았습니다.", daysAgo: 14 },
+  { authorName: "남궁민", body: "헬스장 회원권 페이지를 의뢰했습니다. 가격표가 명확하게 정리돼서 상담 문의 질이 좋아졌어요.", daysAgo: 18 },
+  { authorName: "윤채원", body: "베이커리 주문 페이지가 마음에 쏙 들어요. 케이크 주문이 카톡으로 바로 연결돼서 편합니다.", daysAgo: 22 },
+  { authorName: "임도현", body: "어학원 회화 클래스 신청 페이지를 만들었어요. 반응형이 잘 돼서 어디서 봐도 깔끔하게 나옵니다.", daysAgo: 27 },
+  { authorName: "한지민", body: "리빙 소품 쇼핑몰 페이지를 맡겼는데, 디자인 톤이 일관돼서 단골 손님이 늘었어요. 추천합니다.", daysAgo: 33 },
+];
