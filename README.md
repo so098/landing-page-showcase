@@ -11,7 +11,7 @@ npm-workspaces 모노레포.
 ```bash
 cp .env.example apps/api/.env   # 최초 1회
 npm install                     # 최초 1회
-npm run setup                   # 최초 1회: Docker 대기 → 마이그레이션 → 시드(8 + 159)
+npm run setup                   # 최초 1회: Docker 대기 → 마이그레이션 → 시드(8 + 1,039)
 npm start                       # 매일: Docker 기동 + api(4000)·web(3000) 동시 실행
 ```
 
@@ -32,6 +32,22 @@ npm start                       # 매일: Docker 기동 + api(4000)·web(3000) �
 ```bash
 npm test
 ```
+
+## 성능
+
+### /showcase 무한스크롤 가상화 (직접 구현, 라이브러리 없음)
+
+쇼케이스 1,039개를 끝까지 로드한 상태에서 측정 (Playwright 자동화, 동일 조건 비교):
+
+| 지표 | Before (가상화 없음) | After (가상화) |
+|---|---|---|
+| DOM 노드 수 | 39,556 | 1,611 |
+| 렌더된 카드 수 | 1,039 (전체) | 40 (가시 영역만) |
+| 평균 프레임 시간 | 30.5ms | 23.16ms |
+| 50ms+ long frame | 226개 | 74개 |
+
+- 구현: 순수 계산 코어(`apps/web/src/lib/virtualizer.ts`) + React 훅(`apps/web/src/hooks/useWindowVirtualizer.ts`) 분리 설계
+- 상세: [docs/perf/showcase-virtualization-before-after.md](docs/perf/showcase-virtualization-before-after.md)
 
 ## 진행 로드맵
 
