@@ -14,7 +14,10 @@ npm-debug.log*
 
 # os / editor
 .DS_Store
-.claude/
+
+# claude code — 로컬 설정/워크트리만 제외, 에이전트 정의는 커밋
+.claude/*
+!.claude/agents/
 
 # typescript / next
 *.tsbuildinfo
