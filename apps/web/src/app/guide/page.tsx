@@ -152,9 +152,64 @@ export default function GuidePage() {
               있어요.
             </p>
             <p className="mt-3">
+              <strong className="text-ink">호스팅</strong>은{" "}
+              <span className="font-semibold text-crimson">Netlify</span> 또는{" "}
+              <span className="font-semibold text-crimson">Vercel</span>로 올려드려요. 둘 다 빠르고
+              안정적인 서비스라, 별도 서버 관리 없이 페이지를 24시간 안전하게 운영할 수 있어요.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">도메인</strong>은 이렇게 진행해요.
+            </p>
+            <ol className="mt-2 flex list-decimal flex-col gap-1.5 pl-5">
+              <li>
+                사장님이 호스팅·도메인용 <strong className="text-ink">새 계정</strong>을 하나
+                만들어 주세요 (가입은 저희가 화면을 보며 안내해 드려요).
+              </li>
+              <li>
+                원하시는 도메인의 <strong className="text-ink">최소~최대 가격대</strong>를
+                알려주세요. (도메인은 주소에 따라 가격이 달라요.)
+              </li>
+              <li>
+                알려주신 가격대 안에서 멜스튜디오가{" "}
+                <strong className="text-ink">후보 도메인 3개 정도</strong>를 찾아 전달해 드려요.
+              </li>
+              <li>그중 마음에 드는 주소를 하나 골라주시면, 연결까지 저희가 처리해 드려요.</li>
+            </ol>
+            <p className="mt-3">
               멜스튜디오는 페이지 생성이 완료되면 <strong className="text-ink">개별 연락</strong>을
-              드려서 도메인 구입부터 호스팅 연결까지 함께 도와드려요. 어려운 과정은 저희가 다
-              처리해 드리니 걱정하지 않으셔도 돼요.
+              드려서 위 과정을 함께 진행해요. 어려운 부분은 저희가 다 처리해 드리니 걱정하지 않으셔도
+              돼요.
+            </p>
+          </Accordion>
+
+          <Accordion title="SEO 최적화는 어떻게 되나요?">
+            <p>
+              검색에 잘 노출되도록 <strong className="text-ink">SEO(검색엔진 최적화)</strong>를
+              신경 써서 만들어 드려요. 멜스튜디오 페이지는 다음과 같은 기본기를 갖추고 있어요.
+            </p>
+            <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
+              <li>
+                페이지마다 <strong className="text-ink">제목·설명 메타태그</strong>와{" "}
+                <strong className="text-ink">OG 태그</strong>(카카오톡·페이스북 공유 시 보이는
+                미리보기)를 채워 둬요.
+              </li>
+              <li>
+                검색엔진이 내용을 그대로 읽을 수 있도록{" "}
+                <strong className="text-ink">서버에서 미리 렌더링한 HTML</strong>로 만들어요.
+              </li>
+              <li>
+                제목·문단·목록 등을 의미에 맞게 표시하는{" "}
+                <strong className="text-ink">시맨틱 마크업</strong>을 사용해요.
+              </li>
+            </ul>
+            <p className="mt-3">
+              그리고 페이지가 검색에 등록되도록{" "}
+              <strong className="text-ink">구글 서치 콘솔</strong>과{" "}
+              <strong className="text-ink">네이버 서치어드바이저</strong> 등록까지 대행해 드려요.
+            </p>
+            <p className="mt-3 text-wine/55">
+              검색 순위를 끌어올리는 광고·키워드 컨설팅까지는 포함되지 않아요. 검색에 잘 잡히기
+              위한 기본 설정과 등록까지 해드린다고 생각하시면 돼요.
             </p>
           </Accordion>
 
