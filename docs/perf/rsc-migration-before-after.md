@@ -10,7 +10,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 측정 대상 커밋 | `629a40a` (RSC 마이그레이션 직전, 전 페이지 `"use client"` CSR) |
+| 측정 대상 커밋 | `338fc00` (RSC 마이그레이션 직전, 전 페이지 `"use client"` CSR) |
 | 측정 방법 | 해당 커밋을 git worktree로 체크아웃 → `next build` → `next start` (프로덕션 빌드) |
 | Next.js | 16.2.6 (Turbopack) |
 | Lighthouse | 13.3.0, 모바일 에뮬레이션, simulated throttling (RTT 150ms / ~1.6Mbps / CPU 4x slowdown) |
@@ -23,7 +23,7 @@
 
 ---
 
-## Before — CSR (커밋 `629a40a`)
+## Before — CSR (커밋 `338fc00`)
 
 ### Lighthouse 점수 (중앙값, 3회)
 
@@ -127,7 +127,7 @@ HTML 응답에 쇼케이스 데이터 **없음** (curl로 확인) — 빈 셸 + 
 
 ```bash
 # 1. Before 커밋 체크아웃 (worktree)
-git worktree add /tmp/melstudio-csr-baseline 629a40a
+git worktree add /tmp/melstudio-csr-baseline 338fc00
 cd /tmp/melstudio-csr-baseline && npm ci
 
 # 2. DB/API 실행 (메인 트리에서 — API는 두 커밋 간 동일)

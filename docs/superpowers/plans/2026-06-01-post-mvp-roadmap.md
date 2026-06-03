@@ -41,7 +41,7 @@
 | 마이페이지 / 채팅 | **클라이언트** | 개인화 + 실시간 |
 
 **작업**
-- [x] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before) — [측정 기록](../../perf/rsc-migration-before-after.md) (CSR 커밋 `629a40a` 기준: 홈 Perf 57 / FCP 8.07s / LCP 9.13s)
+- [x] 측정 먼저: 현재 Lighthouse / LCP / FCP / 번들 사이즈 기록 (Before) — [측정 기록](../../perf/rsc-migration-before-after.md) (CSR 커밋 `338fc00` 기준: 홈 Perf 57 / FCP 8.07s / LCP 9.13s)
 - [x] 메인 페이지(`/`): 쇼케이스 데이터를 서버 컴포넌트에서 fetch (ISR) → 클라이언트 인터랙션(필터/슬라이더/모달)만 클라이언트 컴포넌트로 분리
 - [ ] **홈 리뷰 리스트 신규**: Prisma `Review` 모델 + 시드 + `GET /api/reviews` + 홈 섹션 (별점/내용/작성자) — ISR + 리뷰 작성 시 `revalidateTag("reviews")`
 - [x] `/showcase`: 첫 페이지를 서버에서 렌더(ISR) + 이후 페이지만 클라이언트 무한스크롤 (하이브리드)
