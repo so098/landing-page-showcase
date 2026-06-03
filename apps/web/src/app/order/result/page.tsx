@@ -9,12 +9,17 @@ import {
   loadOrder,
   getRemainingEdits,
   consumeEdit,
+  saveRefund,
+  getRefund,
   EDIT_LIMIT,
   type SavedOrderState,
+  type RefundState,
 } from "@/lib/orderStorage";
 import { openChat } from "@/lib/chat";
 import SiteHeader from "@/components/SiteHeader";
 import PagePreview from "@/components/PagePreview";
+import RefundModal from "@/components/RefundModal";
+import Toast from "@/components/Toast";
 
 type ModalKind = null | "complete" | "editChoice" | "moreChoice";
 
@@ -26,12 +31,26 @@ export default function OrderResultPage() {
   const [loaded, setLoaded] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
   const [editsLeft, setEditsLeft] = useState(EDIT_LIMIT);
+  // 환불 모달 열림 여부 + 환불 결과(목). refund가 채워지면 "환불 완료" 상태로 본다.
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refund, setRefund] = useState<RefundState | null>(null);
+  // 환불 완료 토스트 표시 여부
+  const [showRefunded, setShowRefunded] = useState(false);
 
   useEffect(() => {
     setOrder(loadOrder());
     setEditsLeft(getRemainingEdits());
+    setRefund(getRefund());
     setLoaded(true);
   }, []);
+
+  // 환불 확정(목) — 결제가 목 단계라 실제 환불 API는 호출하지 않고 sessionStorage에만 기록한다.
+  // 실제 환불 처리는 5순위 결제 연동 시 백엔드 API와 함께 붙인다.
+  function handleRefund(reason: string) {
+    setRefund(saveRefund(reason));
+    setRefundOpen(false);
+    setShowRefunded(true);
+  }
 
   // 수정 1회 사용 (AI/사람 공통) — 차감 후 다음 동작 실행
   function spendEdit(after: () => void) {
@@ -158,42 +177,74 @@ export default function OrderResultPage() {
               </div>
             </section>
 
-            {/* ── 액션 버튼 ── */}
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setModal("editChoice")}
-                disabled={editsLeft <= 0}
-                className={`w-full rounded-full border px-8 py-3.5 text-center text-sm font-bold transition-all sm:w-auto ${
-                  editsLeft > 0
-                    ? "border-rose/25 bg-white text-crimson hover:border-rose hover:shadow-petal"
-                    : "cursor-not-allowed border-rose/15 bg-white/60 text-wine/30"
-                }`}
-              >
-                수정하기{" "}
-                <span className={editsLeft > 0 ? "text-wine/40" : ""}>
-                  ({editsLeft}회 남음)
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setModal("moreChoice")}
-                className="w-full rounded-full bg-ink px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-crimson sm:w-auto"
-              >
-                추가로 만들기
-              </button>
-              <button
-                type="button"
-                onClick={() => setModal("complete")}
-                className="w-full rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
-              >
-                이대로 완료하기
-              </button>
-            </div>
-            <p className="mt-4 text-center text-xs text-wine/45">
-              수정하기 — AI 또는 사람과 함께 수정 (총 {EDIT_LIMIT}회, 1회 수정 시 1회 차감) ·
-              추가로 만들기 — 새 페이지를 더 제작 · 이대로 완료하기 — 이 페이지로 확정
-            </p>
+            {refund ? (
+              /* ── 환불 완료 상태 ── 환불 후엔 액션 버튼 대신 안내 배너를 보여 재환불을 막는다 */
+              <div className="mt-8 animate-fade-up rounded-3xl border border-rose/15 bg-white/70 p-6 text-center shadow-soft sm:p-7">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-petal/60 text-crimson">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 109-9 9 9 0 00-6.36 2.64L3 8" />
+                    <path d="M3 3v5h5" />
+                  </svg>
+                </div>
+                <h2 className="mt-4 font-display text-xl font-extrabold text-ink">
+                  환불이 접수되었어요
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-wine/65">
+                  남겨주신 사유 “<span className="text-crimson">{refund.reason}</span>”를 확인해
+                  <br className="hidden sm:block" /> 빠르게 환불 처리해드릴게요.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* ── 액션 버튼 ── */}
+                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setModal("editChoice")}
+                    disabled={editsLeft <= 0}
+                    className={`w-full rounded-full border px-8 py-3.5 text-center text-sm font-bold transition-all sm:w-auto ${
+                      editsLeft > 0
+                        ? "border-rose/25 bg-white text-crimson hover:border-rose hover:shadow-petal"
+                        : "cursor-not-allowed border-rose/15 bg-white/60 text-wine/30"
+                    }`}
+                  >
+                    수정하기{" "}
+                    <span className={editsLeft > 0 ? "text-wine/40" : ""}>
+                      ({editsLeft}회 남음)
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModal("moreChoice")}
+                    className="w-full rounded-full bg-ink px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-crimson sm:w-auto"
+                  >
+                    추가로 만들기
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModal("complete")}
+                    className="w-full rounded-full bg-rose-grad px-8 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 sm:w-auto"
+                  >
+                    이대로 완료하기
+                  </button>
+                </div>
+                <p className="mt-4 text-center text-xs text-wine/45">
+                  수정하기 — AI 또는 사람과 함께 수정 (총 {EDIT_LIMIT}회, 1회 수정 시 1회 차감) ·
+                  추가로 만들기 — 새 페이지를 더 제작 · 이대로 완료하기 — 이 페이지로 확정
+                </p>
+
+                {/* 환불하기 — 파괴적 액션이라 다른 액션과 분리하고 절제된 보조(텍스트) 스타일로 둔다 */}
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setRefundOpen(true)}
+                    className="text-xs font-semibold text-wine/45 underline underline-offset-2 transition-colors hover:text-crimson"
+                  >
+                    환불하기
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* ══ 모달들 ══ */}
             {modal && (
@@ -393,6 +444,22 @@ export default function OrderResultPage() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* ── 환불 확인 모달 ── 자체 셸(백드롭/스크롤 락)을 가지므로 위 모달 묶음과 별도로 렌더한다 */}
+            <RefundModal
+              open={refundOpen}
+              pageName={order.form.businessName || "내 랜딩페이지"}
+              onClose={() => setRefundOpen(false)}
+              onConfirm={handleRefund}
+            />
+
+            {/* 환불 완료 토스트 */}
+            {showRefunded && (
+              <Toast
+                message="환불 요청이 접수되었어요"
+                onDismiss={() => setShowRefunded(false)}
+              />
             )}
           </>
         )}
