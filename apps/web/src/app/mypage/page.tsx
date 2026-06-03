@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
+import ReviewModal from "@/components/ReviewModal";
+import Toast from "@/components/Toast";
 import { getUser, login, subscribe, type User } from "@/lib/auth";
 
 // 진행 단계 정의 — 주문 접수 → AI 생성 완료 → 호스팅/도메인 연결 → 사이트 오픈
@@ -101,6 +102,18 @@ function LoggedOut() {
 
 /* ── 로그인 상태 ── */
 function LoggedIn({ user }: { user: User }) {
+  // 리뷰 작성 대상 주문(모달 open 여부 겸용) — null이면 모달 닫힘
+  const [reviewTarget, setReviewTarget] = useState<Payment | null>(null);
+  // 감사 토스트 표시 여부
+  const [showThanks, setShowThanks] = useState(false);
+
+  // 제출 성공 → 모달 닫고 감사 토스트. onSuccess는 ReviewForm effect에서
+  // 호출되므로 안정적인 참조가 되도록 useCallback으로 고정한다.
+  const handleSubmitted = useCallback(() => {
+    setReviewTarget(null);
+    setShowThanks(true);
+  }, []);
+
   return (
     <>
       {/* 인사 헤더 */}
@@ -130,16 +143,46 @@ function LoggedIn({ user }: { user: User }) {
 
         <div className="mt-5 flex flex-col gap-5">
           {MOCK_PAYMENTS.map((p, i) => (
-            <PaymentCard key={p.id} payment={p} delay={i * 80} />
+            <PaymentCard
+              key={p.id}
+              payment={p}
+              delay={i * 80}
+              onWriteReview={() => setReviewTarget(p)}
+            />
           ))}
         </div>
       </section>
+
+      {/* 리뷰 작성 모달 — 대상 주문이 선택됐을 때만 연다 */}
+      <ReviewModal
+        open={reviewTarget !== null}
+        pageName={reviewTarget?.pageName ?? ""}
+        authorName={user.name}
+        onClose={() => setReviewTarget(null)}
+        onSubmitted={handleSubmitted}
+      />
+
+      {/* 제출 완료 감사 토스트 */}
+      {showThanks && (
+        <Toast
+          message="리뷰를 작성해주셔서 감사합니다"
+          onDismiss={() => setShowThanks(false)}
+        />
+      )}
     </>
   );
 }
 
 /* ── 결제/주문 카드 ── */
-function PaymentCard({ payment, delay }: { payment: Payment; delay: number }) {
+function PaymentCard({
+  payment,
+  delay,
+  onWriteReview,
+}: {
+  payment: Payment;
+  delay: number;
+  onWriteReview: () => void;
+}) {
   const done = payment.step >= STEPS.length;
   return (
     <div
@@ -180,6 +223,24 @@ function PaymentCard({ payment, delay }: { payment: Payment; delay: number }) {
       <div className="mt-6 border-t border-rose/10 pt-6">
         <Stepper current={payment.step} />
       </div>
+
+      {/* 리뷰 작성 버튼 — 사이트 오픈이 완료된 주문에만 노출한다.
+          (제작이 끝나야 후기를 남기는 게 자연스러우므로 진행 중 주문엔 숨김) */}
+      {done && (
+        <div className="mt-6 flex justify-end border-t border-rose/10 pt-5">
+          <button
+            type="button"
+            onClick={onWriteReview}
+            className="inline-flex items-center gap-2 rounded-full bg-rose-grad px-6 py-2.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z" />
+            </svg>
+            리뷰 작성
+          </button>
+        </div>
+      )}
     </div>
   );
 }
