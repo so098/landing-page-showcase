@@ -58,7 +58,7 @@
 **테스트 (이 단계에 포함)**
 
 - [x] 프론트 테스트 환경 구축: Vitest + React Testing Library (`apps/web`에 최초 도입)
-- [ ] 서버/클라이언트 분리된 컴포넌트 단위 테스트 (TagBar 필터 ✅, HomeShowcaseSection ✅ — 슬라이더 페이지네이션(ShowcaseGrid)은 미작성)
+- [x] 서버/클라이언트 분리된 컴포넌트 단위 테스트 (TagBar 필터 ✅, HomeShowcaseSection ✅, ShowcaseGrid 슬라이더 페이지네이션 ✅)
 - [ ] Playwright 도입 + E2E: 메인 페이지 로드 → 필터 → 모달 열기 (Playwright 도입 완료, E2E는 `/showcase`로 작성 — 메인 `/` 페이지 E2E는 미작성)
 
 **사람이 확인할 것**
