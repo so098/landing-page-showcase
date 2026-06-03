@@ -27,3 +27,8 @@ next-env.d.ts
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/
+
+# 로컬 작업 산출물 (에이전트 학습 기록, MCP 세션 로그, 검증 스크린샷)
+.learnings/
+.playwright-mcp/
+/*.png
