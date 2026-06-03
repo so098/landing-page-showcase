@@ -2,8 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 
-// 그리드 열 수 감지 — Tailwind 브레이크포인트와 동일하게 유지할 것.
-// (InfiniteShowcaseGrid의 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 와 짝)
+// 그리드 열 수 단일 소스 — InfiniteShowcaseGrid가 이 값으로
+// gridTemplateColumns를 도출한다 (행 묶기 + 시각 레이아웃 모두). 여기만 고치면 됨.
+// 브레이크포인트 px 값은 Tailwind 설정(sm 640 / lg 1024)과 맞춰 유지.
 const BREAKPOINTS = [
   { query: "(min-width: 1024px)", columns: 4 }, // lg
   { query: "(min-width: 640px)", columns: 3 }, // sm
