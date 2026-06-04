@@ -14,7 +14,7 @@ export default function TagBar({
   onChange: (id: string) => void;
 }) {
   return (
-    <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 py-1 md:flex-wrap md:justify-center md:overflow-visible">
+    <div className="no-scrollbar mx-auto flex max-w-6xl gap-2 overflow-x-auto py-1 md:flex-wrap md:justify-center md:overflow-visible">
       {categories.map((cat) => {
         const isActive = cat.id === active;
         return (
@@ -22,17 +22,17 @@ export default function TagBar({
             key={cat.id}
             type="button"
             onClick={() => onChange(cat.id)}
-            className={`group flex flex-shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+            className={`group flex flex-shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-normal tracking-[-0.224px] transition-transform duration-200 active:scale-95 ${
               isActive
-                ? "border-transparent bg-rose-grad text-white shadow-petal"
-                : "border-rose/20 bg-white/70 text-wine/70 hover:border-rose/50 hover:bg-white hover:text-crimson"
+                ? "border-accent bg-accent text-white"
+                : "border-hairline bg-white text-ink-muted/75 hover:border-accent hover:text-accent"
             }`}
           >
             {cat.label}
             {counts && (
               <span
-                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                  isActive ? "bg-white/25 text-white" : "bg-petal/50 text-crimson-deep"
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
+                  isActive ? "bg-white/24 text-white" : "bg-canvas text-ink-muted/60"
                 }`}
               >
                 {counts[cat.id] ?? 0}

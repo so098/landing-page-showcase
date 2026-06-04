@@ -43,12 +43,12 @@ export default function HomeShowcaseSection({
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-5 mb-10 bg-blush/70 px-5 py-4 backdrop-blur-md">
+      <div className="sticky top-11 z-30 -mx-5 mb-10 bg-canvas/80 px-5 py-3 backdrop-blur-md">
         <TagBar categories={tabs} counts={counts} active={active} onChange={setActive} />
       </div>
 
       {apiDown ? (
-        <p className="py-24 text-center text-wine/60">
+        <p className="mx-auto max-w-6xl py-24 text-center text-[17px] tracking-[-0.374px] text-ink-muted/60">
           데이터를 불러오지 못했어요. API 서버(4000)가 켜져 있는지 확인해 주세요.
         </p>
       ) : (

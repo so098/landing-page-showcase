@@ -9,13 +9,13 @@ import type { Metadata } from "next";
 // 상대 경로가 절대 URL로 확장된다 (Next.js가 빌드 시 경고로 알려줌).
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-export const SITE_NAME = "멜스튜디오";
+export const SITE_NAME = "랜딩,픽";
 
 export const SITE_DESCRIPTION =
   "내 사업을 홍보할 웹사이트를 찾으시나요? 카페부터 병원까지, 업종에 맞는 랜딩페이지를 데스크탑·모바일로 미리보세요.";
 
 // 제목 템플릿: 각 페이지는 "쇼케이스 전체 보기"만 넘기면
-// "쇼케이스 전체 보기 — 멜스튜디오"로 확장된다. 홈은 default를 그대로 쓴다.
+// "쇼케이스 전체 보기 — 랜딩,픽"으로 확장된다. 홈은 default를 그대로 쓴다.
 export const TITLE_TEMPLATE = `%s — ${SITE_NAME}`;
 export const TITLE_DEFAULT = `${SITE_NAME} — 업종별 랜딩페이지 쇼케이스`;
 

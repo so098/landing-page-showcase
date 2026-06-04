@@ -30,7 +30,7 @@ export default function Toast({
         className="animate-slide-in pointer-events-auto flex items-center gap-3 rounded-full border border-white/40 bg-ink/95 px-5 py-3 text-sm font-semibold text-white shadow-petalHover backdrop-blur"
       >
         {/* 체크 아이콘 */}
-        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-rose-grad">
+        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-grad">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 6L9 17l-5-5" />
           </svg>

@@ -27,6 +27,8 @@ export default function ReviewForm({
   const [state, formAction] = useActionState<ReviewFormState, FormData>(action, {});
   const formRef = useRef<HTMLFormElement>(null);
   const isModal = variant === "modal";
+  const labelClass = isModal ? "text-ink" : "text-white";
+  const helpClass = isModal ? "text-ink-muted/55" : "text-white/56";
 
   // 연타 제출 가드 — useFormStatus().pending 비활성화는 리렌더 이후에야 적용되므로
   // 그 전에 들어온 두 번째 클릭은 막지 못한다. 제출 시작 시 동기적으로 플래그를 세워
@@ -64,35 +66,35 @@ export default function ReviewForm({
       className={
         isModal
           ? ""
-          : "mt-10 rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8"
+          : "mx-auto mt-10 max-w-6xl border border-white/12 bg-surface-dark-2 p-6 sm:p-8"
       }
     >
       {/* 모달 변형에서는 모달 헤더가 제목/설명을 제공하므로 생략 */}
       {!isModal && (
         <>
-          <h3 className="font-display text-lg font-extrabold text-ink sm:text-xl">
+          <h3 className="font-display text-[21px] font-semibold leading-[1.19] tracking-[0.231px] text-white">
             후기를 남겨주세요
           </h3>
-          <p className="mt-1 text-xs text-wine/55 sm:text-sm">
-            멜스튜디오에서 만든 페이지가 마음에 드셨다면 한마디 부탁드려요.
+          <p className="mt-1 text-sm leading-[1.43] tracking-[-0.224px] text-white/56">
+            랜딩,픽에서 만든 페이지가 마음에 드셨다면 한마디 부탁드려요.
           </p>
         </>
       )}
 
       {state.ok && (
-        <p className="mt-4 rounded-xl border border-rose/20 bg-white px-4 py-3 text-sm font-medium text-crimson">
+        <p className="mt-4 rounded-lg border border-accent/30 bg-white px-4 py-3 text-sm font-normal text-accent">
           소중한 후기 감사합니다. 잠시 후 목록에 반영돼요.
         </p>
       )}
       {state.error && (
-        <p className="mt-4 rounded-xl border border-crimson/30 bg-white px-4 py-3 text-sm font-medium text-crimson">
+        <p className="mt-4 rounded-lg border border-accent/30 bg-white px-4 py-3 text-sm font-normal text-accent">
           {state.error}
         </p>
       )}
 
       <div className="mt-6 flex flex-col gap-5">
         <div>
-          <label htmlFor="review-authorName" className="mb-1.5 block text-sm font-semibold text-ink">
+          <label htmlFor="review-authorName" className={`mb-1.5 block text-sm font-semibold ${labelClass}`}>
             이름
           </label>
           <input
@@ -107,21 +109,21 @@ export default function ReviewForm({
             placeholder="홍길동"
             defaultValue={state.values?.authorName ?? defaultAuthorName ?? ""}
             aria-invalid={!!state.fieldErrors?.authorName}
-            className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
+            className={`w-full rounded-full border bg-white px-5 py-3 text-[17px] tracking-[-0.374px] text-ink placeholder:text-ink-muted/35 transition-colors focus:outline-none focus:ring-2 ${
               state.fieldErrors?.authorName
-                ? "border-crimson focus:ring-crimson/30"
-                : "border-rose/20 focus:border-rose focus:ring-rose/20"
+                ? "border-accent focus:ring-accent/30"
+                : "border-hairline focus:border-accent focus:ring-accent/20"
             }`}
           />
           {state.fieldErrors?.authorName && (
-            <p className="mt-1.5 text-xs font-medium text-crimson">
+            <p className="mt-1.5 text-xs font-medium text-accent">
               {state.fieldErrors.authorName}
             </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="review-body" className="mb-1.5 block text-sm font-semibold text-ink">
+          <label htmlFor="review-body" className={`mb-1.5 block text-sm font-semibold ${labelClass}`}>
             내용
           </label>
           <textarea
@@ -133,17 +135,20 @@ export default function ReviewForm({
             placeholder="어떤 점이 좋았는지 적어주세요 (10자 이상)"
             defaultValue={state.values?.body ?? ""}
             aria-invalid={!!state.fieldErrors?.body}
-            className={`w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
+            className={`w-full resize-none rounded-[18px] border bg-white px-5 py-3 text-[17px] leading-[1.47] tracking-[-0.374px] text-ink placeholder:text-ink-muted/35 transition-colors focus:outline-none focus:ring-2 ${
               state.fieldErrors?.body
-                ? "border-crimson focus:ring-crimson/30"
-                : "border-rose/20 focus:border-rose focus:ring-rose/20"
+                ? "border-accent focus:ring-accent/30"
+                : "border-hairline focus:border-accent focus:ring-accent/20"
             }`}
           />
           {state.fieldErrors?.body && (
-            <p className="mt-1.5 text-xs font-medium text-crimson">{state.fieldErrors.body}</p>
+            <p className="mt-1.5 text-xs font-medium text-accent">{state.fieldErrors.body}</p>
           )}
         </div>
 
+        <p className={`text-xs leading-none tracking-[-0.12px] ${helpClass}`}>
+          등록된 후기는 검토 후 홈 화면에 표시됩니다.
+        </p>
         <SubmitButton />
       </div>
     </form>
@@ -157,7 +162,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="self-start rounded-full bg-rose-grad px-8 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+      className="self-start rounded-full bg-accent px-[22px] py-[11px] text-[17px] font-normal tracking-[-0.374px] text-white transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "등록 중…" : "후기 등록"}
     </button>

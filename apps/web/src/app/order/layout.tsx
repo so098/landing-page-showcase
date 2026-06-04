@@ -6,7 +6,7 @@ import { buildMetadata, TITLE_TEMPLATE } from "@/lib/metadata";
 // (/order/[slug]는 자체 generateMetadata로 더 구체적인 메타데이터를 덮어쓴다)
 //
 // 주의: 중간 레이아웃이 title을 string으로 확정하면 그 아래 페이지의 string title이
-// 루트의 template(%s — 멜스튜디오)을 더는 적용받지 못한다. 그래서 여기서 template을
+// 루트의 template(%s — 랜딩,픽)을 더는 적용받지 못한다. 그래서 여기서 template을
 // 다시 선언해, /order/[slug]의 "블룸 로스터스 주문하기"가 접미사까지 붙도록 한다.
 export const metadata: Metadata = {
   ...buildMetadata({

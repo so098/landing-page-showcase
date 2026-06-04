@@ -156,20 +156,20 @@ export default function ChatWidget() {
     <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {/* ── 채팅 패널 ── */}
       {open && (
-        <div className="flex h-[480px] w-[calc(100vw-2.5rem)] max-w-sm animate-modal-in flex-col overflow-hidden rounded-3xl border border-rose/15 bg-cream shadow-petalHover">
+        <div className="flex h-[480px] w-[calc(100vw-2.5rem)] max-w-sm animate-modal-in flex-col overflow-hidden rounded-3xl border border-accent/15 bg-pearl shadow-petalHover">
           {/* 헤더 */}
-          <div className="flex items-center justify-between border-b border-rose/10 bg-gradient-to-r from-petalSoft to-cream px-5 py-4">
+          <div className="flex items-center justify-between border-b border-accent/10 bg-gradient-to-r from-canvas to-pearl px-5 py-4">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-grad text-white shadow-petal">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-grad text-white shadow-petal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                 </svg>
               </span>
               <div>
-                <p className="font-display text-sm font-extrabold text-ink">멜스튜디오 문의</p>
-                <p className="flex items-center gap-1.5 text-[11px] text-wine/50">
+                <p className="font-display text-sm font-extrabold text-ink">랜딩,픽 문의</p>
+                <p className="flex items-center gap-1.5 text-[11px] text-ink-muted/50">
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-green-500" : "bg-rose/40"}`}
+                    className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-green-500" : "bg-accent/40"}`}
                   />
                   {connected ? "실시간 상담 연결됨" : "연결 중…"}
                 </p>
@@ -179,7 +179,7 @@ export default function ChatWidget() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="채팅 닫기"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/20 bg-white text-wine/60 transition-all hover:rotate-90 hover:border-rose hover:text-crimson"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-accent/20 bg-white text-ink-muted/60 transition-all hover:rotate-90 hover:border-accent hover:text-accent"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
@@ -193,7 +193,7 @@ export default function ChatWidget() {
               <div className="flex flex-1 flex-col items-center justify-center text-center">
                 <span className="text-3xl">💬</span>
                 <p className="mt-3 text-sm font-semibold text-ink">무엇을 도와드릴까요?</p>
-                <p className="mt-1 text-xs text-wine/50">
+                <p className="mt-1 text-xs text-ink-muted/50">
                   랜딩페이지 제작·수정·도메인 연결 등<br />
                   궁금한 점을 남겨주세요.
                 </p>
@@ -204,7 +204,7 @@ export default function ChatWidget() {
                 key={msg.id}
                 className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                   msg.senderType === "CUSTOMER"
-                    ? "self-end rounded-tr-sm bg-rose-grad text-white shadow-petal"
+                    ? "self-end rounded-tr-sm bg-accent-grad text-white shadow-petal"
                     : "self-start rounded-tl-sm bg-white text-ink shadow-soft"
                 }`}
               >
@@ -215,7 +215,7 @@ export default function ChatWidget() {
           </div>
 
           {/* 입력창 */}
-          <div className="border-t border-rose/10 bg-cream p-3">
+          <div className="border-t border-accent/10 bg-pearl p-3">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -225,7 +225,7 @@ export default function ChatWidget() {
                   if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSubmit();
                 }}
                 placeholder="메시지를 입력하세요"
-                className="flex-1 rounded-full border border-rose/20 bg-white px-4 py-2.5 text-sm text-ink placeholder:text-wine/35 transition-colors focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose/20"
+                className="flex-1 rounded-full border border-accent/20 bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink-muted/35 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
               <button
                 type="button"
@@ -234,8 +234,8 @@ export default function ChatWidget() {
                 aria-label="보내기"
                 className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-all ${
                   input.trim()
-                    ? "bg-rose-grad text-white shadow-petal hover:shadow-petalHover"
-                    : "cursor-not-allowed bg-rose/15 text-wine/30"
+                    ? "bg-accent-grad text-white shadow-petal hover:shadow-petalHover"
+                    : "cursor-not-allowed bg-accent/15 text-ink-muted/30"
                 }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -252,10 +252,10 @@ export default function ChatWidget() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "채팅 닫기" : "채팅 열기"}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-rose-grad text-white shadow-petalHover transition-all hover:scale-110 active:scale-95"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-accent-grad text-white shadow-petalHover transition-all hover:scale-110 active:scale-95"
       >
         {unseen > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-sun px-1 font-display text-[11px] font-extrabold text-ink shadow-sm">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 font-display text-[11px] font-extrabold text-white shadow-sm">
             {unseen}
           </span>
         )}

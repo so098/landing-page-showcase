@@ -177,20 +177,20 @@ export default function OrderForm({
   /* ── 생성 중 화면 (목) ── */
   if (generating) {
     return (
-      <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-rose/15 bg-cream p-10 text-center shadow-petal sm:p-14">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
+      <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-accent/15 bg-pearl p-10 text-center shadow-petal sm:p-14">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-grad text-white shadow-petal">
           <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
         </div>
         <h1 className="mt-6 font-display text-2xl font-extrabold text-ink">
           AI가 랜딩페이지를 만들고 있어요
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-wine/70">
-          <strong className="text-crimson">{form.businessName}</strong>의 랜딩페이지를 생성 중이에요.
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted/70">
+          <strong className="text-accent">{form.businessName}</strong>의 랜딩페이지를 생성 중이에요.
           <br />
           잠시만 기다려 주세요…
         </p>
-        <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-rose/15">
-          <div className="h-full w-2/3 animate-pulse rounded-full bg-rose-grad" />
+        <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-accent/15">
+          <div className="h-full w-2/3 animate-pulse rounded-full bg-accent-grad" />
         </div>
       </div>
     );
@@ -199,8 +199,8 @@ export default function OrderForm({
   /* ── 완료 화면 (사람에게 주문하기) ── */
   if (submitted) {
     return (
-      <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-rose/15 bg-cream p-10 text-center shadow-petal sm:p-14">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-grad text-white shadow-petal">
+      <div className="mx-auto mt-10 max-w-xl animate-modal-in rounded-3xl border border-accent/15 bg-pearl p-10 text-center shadow-petal sm:p-14">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent-grad text-white shadow-petal">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 6L9 17l-5-5" />
           </svg>
@@ -208,8 +208,8 @@ export default function OrderForm({
         <h1 className="mt-6 font-display text-2xl font-extrabold text-ink">
           주문이 접수되었어요
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-wine/70">
-          <strong className="text-crimson">{form.businessName}</strong>의 랜딩페이지 주문서를
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted/70">
+          <strong className="text-accent">{form.businessName}</strong>의 랜딩페이지 주문서를
           잘 받았어요.
           <br />
           오른쪽 아래 <strong className="text-ink">채팅</strong>에서 담당자와 바로 이야기하며
@@ -223,13 +223,13 @@ export default function OrderForm({
                 greeting: `[사람에게 주문하기]를 선택하셨습니다.\n${form.businessName}의 주문서를 확인했어요. 담당자와 채팅으로 이야기 나누며 함께 만들어 드릴게요. 편하게 말씀해 주세요 😊`,
               })
             }
-            className="rounded-full bg-rose-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+            className="rounded-full bg-accent-grad px-6 py-3 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
           >
             채팅 열기
           </button>
           <Link
             href="/showcase"
-            className="rounded-full border border-rose/25 bg-white px-6 py-3 text-sm font-semibold text-wine/70 transition-all hover:border-rose hover:text-crimson"
+            className="rounded-full border border-accent/25 bg-white px-6 py-3 text-sm font-semibold text-ink-muted/70 transition-all hover:border-accent hover:text-accent"
           >
             다른 디자인 더 보기
           </Link>
@@ -243,9 +243,9 @@ export default function OrderForm({
       {/* ── 페이지 타이틀 ── */}
       <div className="animate-fade-up text-center">
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-          랜딩페이지 <span className="text-crimson">주문서</span>
+          랜딩페이지 <span className="text-accent">주문서</span>
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-wine/65">
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted/65">
           작성해주신 내용을 바탕으로 AI가{" "}
           {showcase ? "선택하신 디자인에 맞춰" : "어울리는 디자인으로"} 페이지를 만들어요.
         </p>
@@ -253,13 +253,13 @@ export default function OrderForm({
 
       {/* ── 선택한 디자인 (포폴에서 고른 경우에만) ── */}
       {showcase ? (
-        <section className="mt-10 animate-fade-up overflow-hidden rounded-3xl border border-rose/15 bg-cream shadow-soft">
+        <section className="mt-10 animate-fade-up overflow-hidden rounded-3xl border border-accent/15 bg-pearl shadow-soft">
           <div className="flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:p-6">
-            <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl border border-rose/15 bg-white shadow-soft sm:w-64">
-              <div className="flex items-center gap-1.5 border-b border-rose/10 bg-petalSoft/60 px-3 py-2">
-                <span className="h-2 w-2 rounded-full bg-rose/40" />
-                <span className="h-2 w-2 rounded-full bg-rose-light/50" />
-                <span className="h-2 w-2 rounded-full bg-rose-soft/60" />
+            <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl border border-accent/15 bg-white shadow-soft sm:w-64">
+              <div className="flex items-center gap-1.5 border-b border-accent/10 bg-canvas/60 px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-accent/40" />
+                <span className="h-2 w-2 rounded-full bg-accent-sky/50" />
+                <span className="h-2 w-2 rounded-full bg-chip/60" />
               </div>
               <div className="relative aspect-[16/11] w-full overflow-hidden bg-white">
                 <PagePreview item={showcase} variant="desktop" priority />
@@ -267,26 +267,26 @@ export default function OrderForm({
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-rose-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                <span className="rounded-full bg-accent-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
                   {categoryLabel}
                 </span>
-                <span className="text-xs text-wine/40">선택한 디자인</span>
+                <span className="text-xs text-ink-muted/40">선택한 디자인</span>
               </div>
               <h2 className="mt-2 font-display text-2xl font-extrabold text-ink sm:text-3xl">
                 {showcase.title}
               </h2>
-              <p className="mt-1.5 text-sm text-wine/65">{showcase.blurb}</p>
+              <p className="mt-1.5 text-sm text-ink-muted/65">{showcase.blurb}</p>
             </div>
           </div>
         </section>
       ) : (
-        <section className="mt-10 animate-fade-up rounded-3xl border border-dashed border-rose/30 bg-white/50 p-6 text-center">
-          <p className="text-sm text-wine/65">
+        <section className="mt-10 animate-fade-up rounded-3xl border border-dashed border-accent/30 bg-white/50 p-6 text-center">
+          <p className="text-sm text-ink-muted/65">
             아직 디자인을 고르지 않으셨어요. 마음에 드는 디자인이 있으면 더 정확하게 만들 수 있어요.
           </p>
           <Link
             href="/showcase"
-            className="mt-4 inline-block rounded-full border border-rose/25 bg-white px-5 py-2.5 text-sm font-semibold text-crimson transition-all hover:border-rose hover:shadow-petal"
+            className="mt-4 inline-block rounded-full border border-accent/25 bg-white px-5 py-2.5 text-sm font-semibold text-accent transition-all hover:border-accent hover:shadow-petal"
           >
             쇼케이스에서 디자인 고르기
           </Link>
@@ -304,7 +304,7 @@ export default function OrderForm({
               error={errors.businessName}
               value={form.businessName}
               onChange={(v) => update("businessName", v)}
-              placeholder="멜스튜디오"
+              placeholder="랜딩,픽"
             />
             <Field
               id="field-industry"
@@ -452,13 +452,13 @@ export default function OrderForm({
             ))}
           </div>
           {pages.length > 0 && (
-            <p className="mt-4 text-sm text-wine/65">
+            <p className="mt-4 text-sm text-ink-muted/65">
               선택한 페이지 <strong className="text-ink">{pages.length}개</strong>
               {additionalPages > 0 && (
                 <>
                   {" "}
                   · 추가 비용{" "}
-                  <strong className="font-display text-crimson">
+                  <strong className="font-display text-accent">
                     +{additionalCost.toLocaleString("ko-KR")}원
                   </strong>
                 </>
@@ -549,14 +549,14 @@ export default function OrderForm({
 
         {/* ── 8. 자료 업로드 ── */}
         <FormSection no={8} title="자료 업로드" subtitle={MATERIAL_TYPES.join(" · ")}>
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rose/30 bg-white/60 px-6 py-10 text-center transition-colors hover:border-rose hover:bg-white">
-            <svg className="text-rose" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-accent/30 bg-white/60 px-6 py-10 text-center transition-colors hover:border-accent hover:bg-white">
+            <svg className="text-accent" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
             </svg>
             <span className="mt-3 text-sm font-semibold text-ink">
               파일을 선택하거나 끌어다 놓으세요
             </span>
-            <span className="mt-1 text-xs text-wine/45">
+            <span className="mt-1 text-xs text-ink-muted/45">
               이미지, PDF, 문서 파일 (여러 개 선택 가능)
             </span>
             <input
@@ -575,14 +575,14 @@ export default function OrderForm({
               {files.map((f, i) => (
                 <li
                   key={`${f.name}-${i}`}
-                  className="flex items-center justify-between rounded-xl border border-rose/15 bg-white px-4 py-2.5 text-sm text-ink"
+                  className="flex items-center justify-between rounded-xl border border-accent/15 bg-white px-4 py-2.5 text-sm text-ink"
                 >
                   <span className="truncate">{f.name}</span>
                   <button
                     type="button"
                     onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
                     aria-label={`${f.name} 삭제`}
-                    className="ml-3 flex-shrink-0 text-wine/40 transition-colors hover:text-crimson"
+                    className="ml-3 flex-shrink-0 text-ink-muted/40 transition-colors hover:text-accent"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                       <path d="M6 6l12 12M18 6L6 18" />
@@ -592,21 +592,21 @@ export default function OrderForm({
               ))}
             </ul>
           )}
-          <p className="mt-3 text-xs text-wine/45">
+          <p className="mt-3 text-xs text-ink-muted/45">
             파일은 생성 시 참고 자료로 사용돼요. 부족한 자료는 완료 연락 시 추가로 요청드릴 수 있어요.
           </p>
         </FormSection>
 
         {/* ── 생성하기 ── */}
-        <div className="rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8">
+        <div className="rounded-3xl border border-accent/15 bg-pearl p-6 shadow-soft sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm leading-relaxed text-wine/65">
+            <div className="text-sm leading-relaxed text-ink-muted/65">
               선택한 페이지 <strong className="text-ink">{pages.length}개</strong>
               {additionalPages > 0 && (
                 <>
                   {" "}
                   · 추가 비용{" "}
-                  <strong className="font-display text-crimson">
+                  <strong className="font-display text-accent">
                     +{additionalCost.toLocaleString("ko-KR")}원
                   </strong>
                 </>
@@ -615,12 +615,12 @@ export default function OrderForm({
             <button
               type="button"
               onClick={handleSubmit}
-              className="rounded-full bg-rose-grad px-10 py-4 text-base font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+              className="rounded-full bg-accent-grad px-10 py-4 text-base font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
             >
               {mode === "human" ? "사람에게 주문하기" : "생성하기"}
             </button>
           </div>
-          <p className="mt-4 text-center text-xs leading-relaxed text-wine/45 sm:text-right">
+          <p className="mt-4 text-center text-xs leading-relaxed text-ink-muted/45 sm:text-right">
             {mode === "human" ? (
               <>주문서를 확인한 뒤 가능한 시간에 카카오톡으로 연락드려요.</>
             ) : (
@@ -650,19 +650,19 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-rose/15 bg-cream p-6 shadow-soft sm:p-8">
+    <section className="rounded-3xl border border-accent/15 bg-pearl p-6 shadow-soft sm:p-8">
       <div className="flex items-start gap-3">
-        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-rose-grad font-display text-sm font-bold text-white">
+        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent-grad font-display text-sm font-bold text-white">
           {no}
         </span>
         <div>
           <h2 className="font-display text-lg font-extrabold leading-snug text-ink sm:text-xl">
             {title}
           </h2>
-          {subtitle && <p className="mt-1 text-xs text-wine/55 sm:text-sm">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-xs text-ink-muted/55 sm:text-sm">{subtitle}</p>}
         </div>
       </div>
-      {error && <p className="mt-3 text-xs font-medium text-crimson">{error}</p>}
+      {error && <p className="mt-3 text-xs font-medium text-accent">{error}</p>}
       <div className="mt-6">{children}</div>
     </section>
   );
@@ -685,8 +685,8 @@ function Chip({
       aria-pressed={active}
       className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
         active
-          ? "border-transparent bg-rose-grad text-white shadow-petal"
-          : "border-rose/20 bg-white/70 text-wine/70 hover:border-rose/50 hover:bg-white hover:text-crimson"
+          ? "border-transparent bg-accent-grad text-white shadow-petal"
+          : "border-accent/20 bg-white/70 text-ink-muted/70 hover:border-accent/50 hover:bg-white hover:text-accent"
       }`}
     >
       {label}
@@ -718,7 +718,7 @@ function Field({
     <div id={id}>
       <label className="mb-1.5 block text-sm font-semibold text-ink">
         {label}
-        {required && <span className="ml-0.5 text-crimson">*</span>}
+        {required && <span className="ml-0.5 text-accent">*</span>}
       </label>
       <input
         type={type}
@@ -726,13 +726,13 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-invalid={!!error}
-        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
+        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-ink-muted/35 transition-colors focus:outline-none focus:ring-2 ${
           error
-            ? "border-crimson focus:ring-crimson/30"
-            : "border-rose/20 focus:border-rose focus:ring-rose/20"
+            ? "border-accent focus:ring-accent/30"
+            : "border-accent/20 focus:border-accent focus:ring-accent/20"
         }`}
       />
-      {error && <p className="mt-1.5 text-xs font-medium text-crimson">{error}</p>}
+      {error && <p className="mt-1.5 text-xs font-medium text-accent">{error}</p>}
     </div>
   );
 }
@@ -764,13 +764,13 @@ function TextArea({
         rows={rows}
         placeholder={placeholder}
         aria-invalid={!!error}
-        className={`w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:outline-none focus:ring-2 ${
+        className={`w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm text-ink placeholder:text-ink-muted/35 transition-colors focus:outline-none focus:ring-2 ${
           error
-            ? "border-crimson focus:ring-crimson/30"
-            : "border-rose/20 focus:border-rose focus:ring-rose/20"
+            ? "border-accent focus:ring-accent/30"
+            : "border-accent/20 focus:border-accent focus:ring-accent/20"
         }`}
       />
-      {error && <p className="mt-1.5 text-xs font-medium text-crimson">{error}</p>}
+      {error && <p className="mt-1.5 text-xs font-medium text-accent">{error}</p>}
     </div>
   );
 }

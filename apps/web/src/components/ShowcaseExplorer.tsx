@@ -54,16 +54,16 @@ export default function ShowcaseExplorer({
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-5 mb-10 bg-blush/70 px-5 py-4 backdrop-blur-md">
+      <div className="sticky top-11 z-30 -mx-5 mb-10 px-5 py-4 backdrop-blur-md">
         <TagBar categories={tabs} active={active} onChange={handleCategoryChange} />
       </div>
 
       {isError ? (
-        <p className="py-24 text-center text-wine/60">
+        <p className="py-24 text-center text-ink-muted/60">
           데이터를 불러오지 못했어요. API 서버(4000)가 켜져 있는지 확인해 주세요.
         </p>
       ) : isLoading ? (
-        <p className="py-24 text-center text-wine/50">불러오는 중…</p>
+        <p className="py-24 text-center text-ink-muted/50">불러오는 중…</p>
       ) : (
         <InfiniteShowcaseGrid
           items={items}

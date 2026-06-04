@@ -47,11 +47,12 @@ export async function fetchShowcaseBySlug(
 }
 
 export async function fetchReviews(
-  params: { limit?: number },
+  params: { limit?: number; page?: number },
   init?: RequestInit,
 ): Promise<ReviewList> {
   const q = new URLSearchParams();
   q.set("limit", String(params.limit ?? 6));
+  if (params.page) q.set("page", String(params.page));
   const res = await fetch(`${BASE}/api/reviews?${q.toString()}`, init);
   if (!res.ok) throw new Error(`reviews ${res.status}`);
   return ReviewListSchema.parse(await res.json());

@@ -9,40 +9,50 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 차분한 azure–navy 톤온톤 (채도 낮춘 세련된 블루)
-        blush: "#EBF0F4", // 페이지 배경 (쿨 그레이 톤)
-        cream: "#F5F8FB",
-        ink: "#0A2540", // 딥 네이비 텍스트
-        wine: "#23476E", // 보조 텍스트
-        crimson: {
-          DEFAULT: "#1565D8", // 메인 azure
-          deep: "#0E4CA8",
+        // 텍스트
+        ink: "#1D1D1F", // 헤드라인·본문 (near-black, 순수 검정 대신)
+        "ink-muted": "#333333", // 보조 텍스트
+        // 단일 액센트 블루 — 모든 "클릭 가능" 신호는 이 색 하나로
+        accent: {
+          DEFAULT: "#0066CC",
+          deep: "#0071E3", // focus 링
+          sky: "#2997FF", // 다크 표면 위 인라인 링크 (기본 블루는 묻힘)
         },
-        rose: {
-          DEFAULT: "#2D7FF0",
-          light: "#5B9DF5",
-          soft: "#A9CBF7",
-        },
-        petal: "#CCE0F7", // 옅은 칩 배경
-        petalSoft: "#E4EEFA",
-        sun: {
-          DEFAULT: "#F4A82C", // 절제된 앰버 포인트
-          soft: "#FBD79A",
-        },
+        chip: "#D2D2D7", // 사진 위 반투명 원형 컨트롤 칩 베이스
+        // 표면
+        canvas: "#F5F5F7", // off-white parchment 표면 (흰색과 리듬용 미세 대비)
+        pearl: "#FAFAFC", // 펄 버튼 표면 (canvas 위에서도 버튼으로 읽히도록 더 밝게)
+        "surface-dark": "#272729", // 다크 타일
+        "surface-dark-2": "#2A2A2C", // 다크 타일이 연속될 때 미세 분리용
+        // 보더/구분선
+        divider: "#F0F0F0", // 약한 구분선 (하드 라인보다 링 섀도에 가까움)
+        hairline: "#E0E0E0", // 1px 헤어라인 보더
       },
       fontFamily: {
-        display: ['"Gothic A1"', '"IBM Plex Sans KR"', "system-ui", "sans-serif"],
-        body: ['"IBM Plex Sans KR"', "system-ui", "sans-serif"],
+        display: [
+          '"Noto Sans KR"',
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
+        body: [
+          '"Noto Sans KR"',
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
       },
       boxShadow: {
-        petal: "0 16px 40px -22px rgba(10, 37, 64, 0.3)",
-        petalHover: "0 28px 60px -26px rgba(21, 101, 216, 0.4)",
-        soft: "0 6px 24px -14px rgba(10, 37, 64, 0.2)",
+        petal: "none",
+        petalHover: "none",
+        soft: "none",
+        product: "3px 5px 30px 0 rgba(0, 0, 0, 0.22)",
       },
       backgroundImage: {
-        // 가까운 두 톤의 절제된 그라데이션 (거의 솔리드처럼)
-        "rose-grad": "linear-gradient(135deg, #1565D8 0%, #2D7FF0 100%)",
-        "rose-grad-deep": "linear-gradient(135deg, #0E4CA8 0%, #2D7FF0 100%)",
+        "accent-grad": "linear-gradient(135deg, #0066CC 0%, #0066CC 100%)",
+        "accent-grad-deep": "linear-gradient(135deg, #0066CC 0%, #0066CC 100%)",
       },
       keyframes: {
         "fade-up": {

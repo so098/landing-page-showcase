@@ -23,10 +23,10 @@ function Arrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={dir === "next" ? "다음" : "이전"}
-      className={`flex h-12 w-12 items-center justify-center rounded-full border border-rose/20 transition-all duration-300 ${
+      className={`flex h-11 w-11 items-center justify-center rounded-full border transition-transform duration-200 active:scale-95 ${
         disabled
-          ? "cursor-not-allowed bg-white/60 text-wine/25"
-          : "bg-rose-grad text-white shadow-petal hover:scale-110 hover:shadow-petalHover active:scale-95"
+          ? "cursor-not-allowed border-hairline bg-white/60 text-ink-muted/25"
+          : "border-accent bg-accent text-white"
       } ${className}`}
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -60,12 +60,11 @@ export default function ShowcaseGrid({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-rose/30 bg-white/50 px-6 py-24 text-center">
-        <span className="text-4xl">🌸</span>
-        <p className="mt-4 font-display text-lg font-bold text-ink">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-center rounded-[18px] border border-dashed border-hairline bg-white px-6 py-24 text-center">
+        <p className="font-display text-[21px] font-semibold leading-[1.19] tracking-[0.231px] text-ink">
           준비된 페이지가 없어요
         </p>
-        <p className="text-sm text-wine/50">다른 업종을 선택해 보세요.</p>
+        <p className="mt-2 text-sm tracking-[-0.224px] text-ink-muted/60">다른 업종을 선택해 보세요.</p>
       </div>
     );
   }
@@ -74,7 +73,7 @@ export default function ShowcaseGrid({
   const atEnd = page >= pageCount - 1;
 
   return (
-    <div className="relative">
+    <div className="relative mx-auto max-w-6xl">
       {/* 좌우 큰 화살표 (md+) */}
       <Arrow
         dir="prev"
@@ -92,7 +91,7 @@ export default function ShowcaseGrid({
       {/* 카드 그리드 */}
       <div
         key={page}
-        className="grid grid-cols-2 gap-5 animate-slide-in sm:grid-cols-3 lg:grid-cols-5"
+        className="grid animate-slide-in grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5"
       >
         {current.map((item, i) => (
           <ShowcaseCard
@@ -124,8 +123,8 @@ export default function ShowcaseGrid({
               aria-label={`${i + 1}페이지`}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i === page
-                  ? "w-7 bg-rose-grad"
-                  : "w-2 bg-rose/25 hover:bg-rose/50"
+                  ? "w-7 bg-accent"
+                  : "w-2 bg-[#d2d2d7] hover:bg-accent/50"
               }`}
             />
           ))}
@@ -138,8 +137,8 @@ export default function ShowcaseGrid({
           className="md:hidden"
         />
 
-        <span className="ml-1 hidden font-display text-sm font-semibold text-wine/50 sm:block">
-          {page + 1} <span className="text-wine/25">/ {pageCount}</span>
+        <span className="ml-1 hidden font-display text-sm font-normal tracking-[-0.224px] text-ink-muted/50 sm:block">
+          {page + 1} <span className="text-ink-muted/25">/ {pageCount}</span>
         </span>
       </div>
     </div>

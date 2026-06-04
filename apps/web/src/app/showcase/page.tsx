@@ -45,9 +45,9 @@ export default async function ShowcasePage() {
       {/* ── 타이틀 (서버 렌더) ── */}
       <section className="mx-auto max-w-6xl px-5 pb-8 pt-6 text-center sm:pt-10">
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-5xl">
-          쇼케이스 <span className="text-crimson">전체 보기</span>
+          쇼케이스 <span className="text-accent">전체 보기</span>
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-wine/70">
+        <p className="mt-4 text-base leading-relaxed text-ink-muted/70">
           업종 태그를 고르고 아래로 스크롤하면 더 많은 디자인이 나와요.
         </p>
       </section>

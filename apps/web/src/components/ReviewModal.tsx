@@ -80,26 +80,26 @@ export default function ReviewModal({
         type="button"
         onClick={onClose}
         aria-label="닫기"
-        className="absolute inset-0 cursor-default bg-wine/55 backdrop-blur-md"
+        className="absolute inset-0 cursor-default bg-ink-muted/55 backdrop-blur-md"
       />
 
       {/* 패널 */}
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-white/40 bg-cream shadow-petalHover animate-modal-in">
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-white/40 bg-pearl shadow-petalHover animate-modal-in">
         {/* 헤더 */}
-        <div className="flex items-start justify-between gap-4 border-b border-rose/10 bg-gradient-to-r from-petalSoft to-cream px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-accent/10 bg-gradient-to-r from-canvas to-pearl px-6 py-5">
           <div>
-            <span className="rounded-full bg-rose-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
+            <span className="rounded-full bg-accent-grad px-2.5 py-0.5 text-[11px] font-semibold text-white">
               리뷰 작성
             </span>
             <h2 className="mt-1.5 font-display text-xl font-extrabold text-ink">
               {pageName}
             </h2>
-            <p className="text-sm text-wine/60">제작 경험은 어떠셨나요? 한마디 남겨주세요.</p>
+            <p className="text-sm text-ink-muted/60">제작 경험은 어떠셨나요? 한마디 남겨주세요.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-rose/20 bg-white text-wine/60 transition-all hover:rotate-90 hover:border-rose hover:text-crimson"
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-accent/20 bg-white text-ink-muted/60 transition-all hover:rotate-90 hover:border-accent hover:text-accent"
             aria-label="닫기"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">

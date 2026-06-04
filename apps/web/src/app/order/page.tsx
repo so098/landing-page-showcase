@@ -21,7 +21,7 @@ export default function OrderEntryPage() {
     <div className="relative z-10 min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-5 pb-24 pt-4">
-        <Suspense fallback={<p className="py-24 text-center text-wine/50">불러오는 중…</p>}>
+        <Suspense fallback={<p className="py-24 text-center text-ink-muted/50">불러오는 중…</p>}>
           <OrderEntry />
         </Suspense>
       </main>

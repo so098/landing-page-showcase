@@ -102,33 +102,33 @@ export default function AdminChatPage() {
             </svg>
           </span>
           <span className="font-display text-xl font-extrabold tracking-tight text-ink">
-            멜스튜디오 <span className="text-crimson">관리자</span>
+            랜딩,픽 <span className="text-accent">관리자</span>
           </span>
         </Link>
-        <p className="flex items-center gap-1.5 text-xs text-wine/50">
-          <span className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-rose/40"}`} />
+        <p className="flex items-center gap-1.5 text-xs text-ink-muted/50">
+          <span className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-accent/40"}`} />
           {connected ? "실시간 연결됨" : "연결 중…"}
         </p>
       </header>
 
       {/* ── 인박스 본문 ── */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 pb-10">
-        <div className="flex h-[calc(100vh-160px)] min-h-[480px] overflow-hidden rounded-3xl border border-rose/15 bg-cream shadow-petal">
+        <div className="flex h-[calc(100vh-160px)] min-h-[480px] overflow-hidden rounded-3xl border border-accent/15 bg-pearl shadow-petal">
           {/* 방 목록 */}
-          <aside className="flex w-full max-w-[300px] flex-col border-r border-rose/10 bg-white/50">
-            <div className="border-b border-rose/10 px-5 py-4">
+          <aside className="flex w-full max-w-[300px] flex-col border-r border-accent/10 bg-white/50">
+            <div className="border-b border-accent/10 px-5 py-4">
               <h1 className="font-display text-base font-extrabold text-ink">문의 인박스</h1>
-              <p className="mt-0.5 text-xs text-wine/50">{rooms.length}개의 대화</p>
+              <p className="mt-0.5 text-xs text-ink-muted/50">{rooms.length}개의 대화</p>
             </div>
             <div className="flex-1 overflow-y-auto">
               {loadError ? (
-                <p className="px-5 py-10 text-center text-xs text-wine/50">
+                <p className="px-5 py-10 text-center text-xs text-ink-muted/50">
                   목록을 불러오지 못했어요.
                   <br />
                   API 서버(4000)를 확인해 주세요.
                 </p>
               ) : rooms.length === 0 ? (
-                <p className="px-5 py-10 text-center text-xs text-wine/50">
+                <p className="px-5 py-10 text-center text-xs text-ink-muted/50">
                   아직 문의가 없어요.
                 </p>
               ) : (
@@ -137,10 +137,10 @@ export default function AdminChatPage() {
                     key={room.id}
                     type="button"
                     onClick={() => openRoom(room)}
-                    className={`flex w-full flex-col gap-1 border-b border-rose/5 px-5 py-4 text-left transition-colors ${
+                    className={`flex w-full flex-col gap-1 border-b border-accent/5 px-5 py-4 text-left transition-colors ${
                       activeRoom?.id === room.id
-                        ? "bg-petal/30"
-                        : "hover:bg-petalSoft/40"
+                        ? "bg-divider/30"
+                        : "hover:bg-canvas/40"
                     }`}
                   >
                     <span className="flex items-center justify-between">
@@ -148,15 +148,15 @@ export default function AdminChatPage() {
                         {room.visitorName}
                       </span>
                       {room.unreadCount > 0 && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-crimson px-1.5 font-display text-[11px] font-bold text-white">
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 font-display text-[11px] font-bold text-white">
                           {room.unreadCount}
                         </span>
                       )}
                     </span>
-                    <span className="truncate text-xs text-wine/55">
+                    <span className="truncate text-xs text-ink-muted/55">
                       {room.lastMessage?.body ?? "대화 시작 전"}
                     </span>
-                    <span className="text-[10px] text-wine/35">
+                    <span className="text-[10px] text-ink-muted/35">
                       {timeOf(room.updatedAt)}
                     </span>
                   </button>
@@ -173,19 +173,19 @@ export default function AdminChatPage() {
                 <p className="mt-4 font-display text-lg font-bold text-ink">
                   대화를 선택해 주세요
                 </p>
-                <p className="mt-1 text-sm text-wine/50">
+                <p className="mt-1 text-sm text-ink-muted/50">
                   왼쪽 목록에서 고객 문의를 선택하면 채팅이 열려요.
                 </p>
               </div>
             ) : (
               <>
                 {/* 채팅 헤더 */}
-                <div className="flex items-center justify-between border-b border-rose/10 bg-gradient-to-r from-petalSoft to-cream px-6 py-4">
+                <div className="flex items-center justify-between border-b border-accent/10 bg-gradient-to-r from-canvas to-pearl px-6 py-4">
                   <div>
                     <p className="font-display text-base font-extrabold text-ink">
                       {activeRoom.visitorName}
                     </p>
-                    <p className="text-[11px] text-wine/45">{activeRoom.visitorId}</p>
+                    <p className="text-[11px] text-ink-muted/45">{activeRoom.visitorId}</p>
                   </div>
                 </div>
 
@@ -207,7 +207,7 @@ export default function AdminChatPage() {
                       >
                         {msg.body}
                       </div>
-                      <span className="px-1 text-[10px] text-wine/35">
+                      <span className="px-1 text-[10px] text-ink-muted/35">
                         {timeOf(msg.createdAt)}
                       </span>
                     </div>
@@ -216,7 +216,7 @@ export default function AdminChatPage() {
                 </div>
 
                 {/* 입력창 */}
-                <div className="border-t border-rose/10 p-4">
+                <div className="border-t border-accent/10 p-4">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -226,7 +226,7 @@ export default function AdminChatPage() {
                         if (e.key === "Enter" && !e.nativeEvent.isComposing) send();
                       }}
                       placeholder={`${activeRoom.visitorName}님에게 답장하기`}
-                      className="flex-1 rounded-full border border-rose/20 bg-white px-4 py-3 text-sm text-ink placeholder:text-wine/35 transition-colors focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose/20"
+                      className="flex-1 rounded-full border border-accent/20 bg-white px-4 py-3 text-sm text-ink placeholder:text-ink-muted/35 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                     <button
                       type="button"
@@ -235,8 +235,8 @@ export default function AdminChatPage() {
                       aria-label="답장 보내기"
                       className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full transition-all ${
                         input.trim()
-                          ? "bg-ink text-white hover:bg-crimson"
-                          : "cursor-not-allowed bg-rose/15 text-wine/30"
+                          ? "bg-ink text-white hover:bg-accent"
+                          : "cursor-not-allowed bg-accent/15 text-ink-muted/30"
                       }`}
                     >
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

@@ -20,8 +20,8 @@ export default function GuidePage() {
 
       {/* ── 타이틀 ── */}
       <section className="mx-auto max-w-3xl px-5 pb-4 pt-8 text-center sm:pt-14">
-        <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-rose/20 bg-white/70 px-4 py-1.5 text-xs font-semibold text-crimson-deep shadow-soft">
-          <span className="h-2 w-2 animate-float rounded-full bg-sun shadow-[0_0_8px_rgba(244,168,44,0.6)]" />
+        <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-accent/20 bg-white/70 px-4 py-1.5 text-xs font-semibold text-accent-deep shadow-soft">
+          <span className="h-2 w-2 animate-float rounded-full bg-accent shadow-[0_0_8px_rgba(0,102,204,0.6)]" />
           이용 안내
         </span>
         <h1
@@ -30,13 +30,13 @@ export default function GuidePage() {
         >
           이 홈페이지의 랜딩페이지는
           <br />
-          <span className="text-crimson">AI</span>로 만들어졌습니다
+          <span className="text-accent">AI</span>로 만들어졌습니다
         </h1>
         <p
-          className="mx-auto mt-5 max-w-xl animate-fade-up text-base leading-relaxed text-wine/70"
+          className="mx-auto mt-5 max-w-xl animate-fade-up text-base leading-relaxed text-ink-muted/70"
           style={{ animationDelay: "160ms" }}
         >
-          단돈 <strong className="text-crimson">10,000원</strong>에 퀄리티 좋은 랜딩페이지를
+          단돈 <strong className="text-accent">10,000원</strong>에 퀄리티 좋은 랜딩페이지를
           만들어 드리고, 개별 연락을 드려 호스팅과 도메인 연결까지 도와드려요.
         </p>
       </section>
@@ -45,7 +45,7 @@ export default function GuidePage() {
       <section className="mx-auto max-w-3xl px-5 pb-10 pt-12">
         <div className="relative flex flex-col gap-0">
           {/* 세로 연결선 */}
-          <div className="absolute bottom-12 left-[27px] top-12 w-0.5 bg-gradient-to-b from-rose/40 via-rose/25 to-rose/40 sm:left-[31px]" />
+          <div className="absolute bottom-12 left-[27px] top-12 w-0.5 bg-gradient-to-b from-accent/40 via-accent/25 to-accent/40 sm:left-[31px]" />
 
           <Step
             no={1}
@@ -94,7 +94,7 @@ export default function GuidePage() {
           >
             만들어진 페이지를 보고 더 추가로 만들고 싶으면,
             <br className="hidden sm:block" />
-            <strong className="text-crimson">추가로 주문하기</strong>를 클릭하세요. 두 가지 방법 중
+            <strong className="text-accent">추가로 주문하기</strong>를 클릭하세요. 두 가지 방법 중
             고를 수 있어요.
           </Step>
         </div>
@@ -124,7 +124,7 @@ export default function GuidePage() {
           />
         </div>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-wine/45">
+        <p className="mt-6 text-center text-xs leading-relaxed text-ink-muted/45">
           두 방법 모두 같은 주문서를 사용해요. AI 선택 시 바로 생성되고, 사람에게 주문하기를
           선택하면 가능한 시간에 카카오톡으로 연락드려요.
         </p>
@@ -135,7 +135,7 @@ export default function GuidePage() {
         <h2 className="text-center font-display text-2xl font-extrabold text-ink sm:text-3xl">
           공지사항
         </h2>
-        <p className="mt-2 text-center text-sm text-wine/60">
+        <p className="mt-2 text-center text-sm text-ink-muted/60">
           자주 묻는 내용을 모았어요. 항목을 누르면 펼쳐져요.
         </p>
 
@@ -143,7 +143,7 @@ export default function GuidePage() {
           <Accordion title="도메인과 호스팅이란?" defaultOpen>
             <p>
               <strong className="text-ink">도메인</strong>은 내 웹사이트의 인터넷 주소예요.
-              예를 들어 <span className="font-semibold text-crimson">dalkom-bakery.com</span>{" "}
+              예를 들어 <span className="font-semibold text-accent">dalkom-bakery.com</span>{" "}
               같은 주소를 말해요. 고객이 이 주소를 입력하면 내 랜딩페이지로 들어올 수 있어요.
             </p>
             <p className="mt-3">
@@ -153,8 +153,8 @@ export default function GuidePage() {
             </p>
             <p className="mt-3">
               <strong className="text-ink">호스팅</strong>은{" "}
-              <span className="font-semibold text-crimson">Netlify</span> 또는{" "}
-              <span className="font-semibold text-crimson">Vercel</span>로 올려드려요. 둘 다 빠르고
+              <span className="font-semibold text-accent">Netlify</span> 또는{" "}
+              <span className="font-semibold text-accent">Vercel</span>로 올려드려요. 둘 다 빠르고
               안정적인 서비스라, 별도 서버 관리 없이 페이지를 24시간 안전하게 운영할 수 있어요.
             </p>
             <p className="mt-3">
@@ -170,13 +170,13 @@ export default function GuidePage() {
                 알려주세요. (도메인은 주소에 따라 가격이 달라요.)
               </li>
               <li>
-                알려주신 가격대 안에서 멜스튜디오가{" "}
+                알려주신 가격대 안에서 랜딩,픽이{" "}
                 <strong className="text-ink">후보 도메인 3개 정도</strong>를 찾아 전달해 드려요.
               </li>
               <li>그중 마음에 드는 주소를 하나 골라주시면, 연결까지 저희가 처리해 드려요.</li>
             </ol>
             <p className="mt-3">
-              멜스튜디오는 페이지 생성이 완료되면 <strong className="text-ink">개별 연락</strong>을
+              랜딩,픽은 페이지 생성이 완료되면 <strong className="text-ink">개별 연락</strong>을
               드려서 위 과정을 함께 진행해요. 어려운 부분은 저희가 다 처리해 드리니 걱정하지 않으셔도
               돼요.
             </p>
@@ -185,7 +185,7 @@ export default function GuidePage() {
           <Accordion title="SEO 최적화는 어떻게 되나요?">
             <p>
               검색에 잘 노출되도록 <strong className="text-ink">SEO(검색엔진 최적화)</strong>를
-              신경 써서 만들어 드려요. 멜스튜디오 페이지는 다음과 같은 기본기를 갖추고 있어요.
+              신경 써서 만들어 드려요. 랜딩,픽 페이지는 다음과 같은 기본기를 갖추고 있어요.
             </p>
             <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
               <li>
@@ -207,7 +207,7 @@ export default function GuidePage() {
               <strong className="text-ink">구글 서치 콘솔</strong>과{" "}
               <strong className="text-ink">네이버 서치어드바이저</strong> 등록까지 대행해 드려요.
             </p>
-            <p className="mt-3 text-wine/55">
+            <p className="mt-3 text-ink-muted/55">
               검색 순위를 끌어올리는 광고·키워드 컨설팅까지는 포함되지 않아요. 검색에 잘 잡히기
               위한 기본 설정과 등록까지 해드린다고 생각하시면 돼요.
             </p>
@@ -252,23 +252,23 @@ export default function GuidePage() {
 
       {/* ── CTA ── */}
       <section className="mx-auto max-w-3xl px-5 pb-28 text-center">
-        <div className="rounded-3xl border border-rose/15 bg-cream p-8 shadow-soft sm:p-12">
+        <div className="rounded-3xl border border-accent/15 bg-pearl p-8 shadow-soft sm:p-12">
           <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">
             지금 바로 시작해 보세요
           </h2>
-          <p className="mt-3 text-sm text-wine/65">
-            첫 랜딩페이지는 단돈 <strong className="text-crimson">10,000원</strong>이에요.
+          <p className="mt-3 text-sm text-ink-muted/65">
+            첫 랜딩페이지는 단돈 <strong className="text-accent">10,000원</strong>이에요.
           </p>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/showcase"
-              className="rounded-full border border-rose/25 bg-white px-7 py-3.5 text-sm font-bold text-crimson transition-all hover:border-rose hover:shadow-petal"
+              className="rounded-full border border-accent/25 bg-white px-7 py-3.5 text-sm font-bold text-accent transition-all hover:border-accent hover:shadow-petal"
             >
               디자인 둘러보기
             </Link>
             <Link
               href="/order"
-              className="rounded-full bg-rose-grad px-7 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
+              className="rounded-full bg-accent-grad px-7 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
             >
               주문하기
             </Link>
@@ -292,17 +292,17 @@ function Accordion({
   return (
     <details
       open={defaultOpen}
-      className="group rounded-2xl border border-rose/15 bg-cream shadow-soft transition-shadow open:shadow-petal"
+      className="group rounded-2xl border border-accent/15 bg-pearl shadow-soft transition-shadow open:shadow-petal"
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-5 [&::-webkit-details-marker]:hidden">
         <span className="font-display text-base font-bold text-ink sm:text-lg">{title}</span>
-        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-rose/20 bg-white text-wine/60 transition-transform duration-300 group-open:rotate-180 group-open:border-rose group-open:text-crimson">
+        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-accent/20 bg-white text-ink-muted/60 transition-transform duration-300 group-open:rotate-180 group-open:border-accent group-open:text-accent">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9l6 6 6-6" />
           </svg>
         </span>
       </summary>
-      <div className="border-t border-rose/10 px-6 py-5 text-sm leading-relaxed text-wine/70">
+      <div className="border-t border-accent/10 px-6 py-5 text-sm leading-relaxed text-ink-muted/70">
         {children}
       </div>
     </details>
@@ -327,17 +327,17 @@ function Step({
     <div className="relative flex items-start gap-5 sm:gap-7">
       {/* 번호 + 아이콘 */}
       <div className="relative z-10 flex flex-col items-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-grad text-white shadow-petal sm:h-16 sm:w-16">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-grad text-white shadow-petal sm:h-16 sm:w-16">
           {icon}
         </div>
       </div>
 
       {/* 내용 */}
-      <div className="flex-1 rounded-3xl border border-rose/15 bg-cream p-5 shadow-soft sm:p-7">
+      <div className="flex-1 rounded-3xl border border-accent/15 bg-pearl p-5 shadow-soft sm:p-7">
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-display text-xs font-bold text-wine/40">STEP {no}</span>
+          <span className="font-display text-xs font-bold text-ink-muted/40">STEP {no}</span>
           {badge && (
-            <span className="rounded-full bg-sun px-2.5 py-0.5 font-display text-xs font-extrabold text-ink shadow-sm">
+            <span className="rounded-full bg-accent px-2.5 py-0.5 font-display text-xs font-extrabold text-white shadow-sm">
               {badge}
             </span>
           )}
@@ -345,7 +345,7 @@ function Step({
         <h3 className="mt-1.5 font-display text-lg font-extrabold leading-snug text-ink sm:text-xl">
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-wine/65">{children}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted/65">{children}</p>
       </div>
     </div>
   );
@@ -355,7 +355,7 @@ function Step({
 function Arrow() {
   return (
     <div className="relative z-10 flex justify-center py-3 pl-14 sm:pl-16">
-      <svg className="text-rose/50" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="text-accent/50" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 5v14M19 12l-7 7-7-7" />
       </svg>
     </div>
@@ -382,20 +382,20 @@ function PathCard({
     <div
       className={`flex flex-col rounded-3xl border p-7 shadow-soft transition-all hover:-translate-y-1 hover:shadow-petalHover sm:p-8 ${
         accent === "ai"
-          ? "border-crimson/30 bg-white ring-1 ring-crimson/10"
-          : "border-rose/15 bg-cream"
+          ? "border-accent/30 bg-white ring-1 ring-accent/10"
+          : "border-accent/15 bg-pearl"
       }`}
     >
       <div className="flex items-center justify-between">
         <span className="text-3xl">{emoji}</span>
         {accent === "ai" && (
-          <span className="rounded-full bg-sun px-2.5 py-0.5 text-[10px] font-bold text-ink shadow-sm">
+          <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
             빠른 제작
           </span>
         )}
       </div>
       <h3 className="mt-4 font-display text-xl font-extrabold text-ink">{name}</h3>
-      <p className="mt-1 font-display text-3xl font-extrabold text-crimson">{price}</p>
+      <p className="mt-1 font-display text-3xl font-extrabold text-accent">{price}</p>
 
       {/* 미니 플로우 */}
       <div className="mt-6 flex flex-col">
@@ -404,21 +404,21 @@ function PathCard({
             <div className="flex items-center gap-3">
               <span
                 className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full font-display text-[11px] font-bold ${
-                  accent === "ai" ? "bg-rose-grad text-white" : "bg-ink text-white"
+                  accent === "ai" ? "bg-accent-grad text-white" : "bg-ink text-white"
                 }`}
               >
                 {i + 1}
               </span>
-              <span className="text-sm font-medium text-wine/75">{s}</span>
+              <span className="text-sm font-medium text-ink-muted/75">{s}</span>
             </div>
             {i < steps.length - 1 && (
-              <div className="ml-3 h-5 w-px bg-rose/25" />
+              <div className="ml-3 h-5 w-px bg-accent/25" />
             )}
           </div>
         ))}
       </div>
 
-      <p className="mt-7 border-t border-rose/10 pt-4 text-xs text-wine/50">{footer}</p>
+      <p className="mt-7 border-t border-accent/10 pt-4 text-xs text-ink-muted/50">{footer}</p>
     </div>
   );
 }
