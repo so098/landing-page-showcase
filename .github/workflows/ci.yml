@@ -1,0 +1,77 @@
+# CI — 푸시마다 web·api·shared 테스트와 빌드를 자동 실행해 main을 항상 green으로 유지한다.
+#
+# 트리거: main 푸시 + 수동 실행(workflow_dispatch). (PR 없이 push 트리거로 운영)
+#
+# 잡을 web/api로 나눈 이유:
+#   - web: DB가 필요 없다. RTL/jsdom 테스트이고, next build는 API가 꺼져 있으면
+#          page.tsx의 try/catch가 빈 데이터로 폴백하므로 외부 의존 없이 빌드된다.
+#   - api: 실제 Postgres에 쓰고 지우는 통합 테스트라(모킹 안 함) 서비스 컨테이너 +
+#          마이그레이션 + 시드가 필수다. (showcase 테스트가 시드 데이터를 가정)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 같은 ref에 새 푸시가 오면 진행 중인 이전 실행을 취소한다(낭비 방지).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: web (shared·web 테스트 + 빌드)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # 로컬 개발 버전과 일치
+          cache: npm
+      - run: npm ci
+      - name: shared 테스트
+        run: npm run test -w @melstudio/shared
+      - name: web 테스트 (Vitest + React Testing Library)
+        run: npm run test -w @melstudio/web
+      - name: web 프로덕션 빌드 (next build — TypeScript 타입체크 포함)
+        run: npm run build -w @melstudio/web
+
+  api:
+    name: api (Postgres + 마이그레이션 + 통합 테스트)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine # docker-compose와 동일 버전
+        env:
+          POSTGRES_USER: melstudio
+          POSTGRES_PASSWORD: melstudio
+          POSTGRES_DB: melstudio
+        ports:
+          - 5432:5432
+        # DB가 연결을 받을 준비가 될 때까지 잡 시작을 대기한다.
+        options: >-
+          --health-cmd "pg_isready -U melstudio -d melstudio"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # 로컬 apps/api/.env와 동일한 접속 정보. 서비스 컨테이너가 localhost:5432로 노출된다.
+      DATABASE_URL: postgresql://melstudio:melstudio@localhost:5432/melstudio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prisma Client 생성 (postinstall이 없어 명시적으로 실행)
+        run: npm run prisma:generate -w @melstudio/api
+      - name: 마이그레이션 적용 (빈 DB → 스키마 생성)
+        run: npm run db:deploy -w @melstudio/api
+      - name: 시드 (카테고리 8 + 쇼케이스 1,039 — showcase 테스트가 가정)
+        run: npm run db:seed -w @melstudio/api
+      - name: api 테스트 (Vitest + supertest, 실제 DB)
+        run: npm run test -w @melstudio/api
+      - name: api 빌드 (tsc 타입체크)
+        run: npm run build -w @melstudio/api
