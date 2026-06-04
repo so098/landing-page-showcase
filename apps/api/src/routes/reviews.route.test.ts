@@ -54,7 +54,7 @@ describe("GET /api/reviews", () => {
     expect(res.body.items[0].authorName).toBe("최*식");
   });
 
-  it("limit으로 개수를 제한한다", async () => {
+  it("limit으로 개수를 제한하고 total은 전체 수를 반환한다", async () => {
     for (let i = 0; i < 4; i++) {
       await request(app)
         .post("/api/reviews")
@@ -63,10 +63,31 @@ describe("GET /api/reviews", () => {
     const res = await request(app).get("/api/reviews?limit=2");
     expect(res.status).toBe(200);
     expect(res.body.items.length).toBe(2);
+    expect(res.body.total).toBe(4); // 페이지 크기와 무관한 전체 수
+  });
+
+  it("page로 다음 묶음을 가져온다", async () => {
+    for (let i = 0; i < 4; i++) {
+      await request(app)
+        .post("/api/reviews")
+        .send({ authorName: "테스터", body: `리뷰 내용 번호 ${i} 입니다.` });
+    }
+    const p1 = await request(app).get("/api/reviews?limit=3&page=1");
+    const p2 = await request(app).get("/api/reviews?limit=3&page=2");
+    expect(p1.body.items.length).toBe(3);
+    expect(p2.body.items.length).toBe(1); // 4개 중 나머지 1개
+    expect(p1.body.total).toBe(4);
+    expect(p2.body.total).toBe(4);
   });
 
   it("limit이 범위 밖이면 400", async () => {
     const res = await request(app).get("/api/reviews?limit=9999");
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("page가 0 이하면 400", async () => {
+    const res = await request(app).get("/api/reviews?page=0");
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe("VALIDATION_ERROR");
   });

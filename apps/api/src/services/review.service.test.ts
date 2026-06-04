@@ -55,8 +55,32 @@ describe("listReviews", () => {
     expect(items.length).toBe(3);
   });
 
-  it("리뷰가 없으면 빈 배열을 반환한다", async () => {
-    const { items } = await listReviews({ limit: 6 });
+  it("리뷰가 없으면 빈 배열 + total 0을 반환한다", async () => {
+    const { items, total } = await listReviews({ limit: 6 });
     expect(items).toEqual([]);
+    expect(total).toBe(0);
+  });
+
+  it("total은 페이지 크기와 무관하게 전체 리뷰 수다", async () => {
+    for (let i = 0; i < 7; i++) {
+      await createReview({ authorName: "테스터", body: `리뷰 내용 번호 ${i} 입니다.` });
+    }
+    const { items, total } = await listReviews({ limit: 5 });
+    expect(items.length).toBe(5);
+    expect(total).toBe(7);
+  });
+
+  it("page로 건너뛴다 (page 2는 다음 묶음)", async () => {
+    // i=0..6 순서로 생성 → 최신순이면 6,5,4,3,2,1,0
+    for (let i = 0; i < 7; i++) {
+      await createReview({ authorName: "테스터", body: `리뷰 내용 번호 ${i} 입니다.` });
+    }
+    const page1 = await listReviews({ limit: 5, page: 1 });
+    const page2 = await listReviews({ limit: 5, page: 2 });
+    expect(page1.items.length).toBe(5);
+    expect(page2.items.length).toBe(2); // 7개 중 나머지 2개
+    // 페이지 간 중복 없음
+    const ids = new Set([...page1.items, ...page2.items].map((r) => r.id));
+    expect(ids.size).toBe(7);
   });
 });

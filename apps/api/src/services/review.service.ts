@@ -25,12 +25,21 @@ function toReview(row: {
   };
 }
 
-export async function listReviews(args: { limit: number }): Promise<ReviewList> {
-  const rows = await prisma.review.findMany({
-    orderBy: { createdAt: "desc" },
-    take: args.limit,
-  });
-  return { items: rows.map(toReview) };
+// 리뷰 목록 — 최신순, 페이지네이션(1-based). total로 전체 페이지 수를 계산한다.
+export async function listReviews(args: {
+  limit: number;
+  page?: number;
+}): Promise<ReviewList> {
+  const page = args.page ?? 1;
+  const [rows, total] = await Promise.all([
+    prisma.review.findMany({
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * args.limit,
+      take: args.limit,
+    }),
+    prisma.review.count(),
+  ]);
+  return { items: rows.map(toReview), total };
 }
 
 export async function createReview(input: ReviewCreate): Promise<Review> {

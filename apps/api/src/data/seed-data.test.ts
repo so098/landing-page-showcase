@@ -51,8 +51,8 @@ describe("generateShowcases", () => {
 });
 
 describe("SEED_REVIEWS", () => {
-  it("리뷰 10개를 노출한다", () => {
-    expect(SEED_REVIEWS.length).toBe(10);
+  it("리뷰 40개를 노출한다", () => {
+    expect(SEED_REVIEWS.length).toBe(40);
   });
 
   it("모든 리뷰가 ReviewCreateSchema(이름 2~10자, 내용 10~500자)를 통과한다", () => {

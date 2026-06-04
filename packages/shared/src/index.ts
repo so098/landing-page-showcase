@@ -41,6 +41,7 @@ export type Review = z.infer<typeof ReviewSchema>;
 
 export const ReviewListSchema = z.object({
   items: z.array(ReviewSchema),
+  total: z.number(), // 전체 리뷰 수 (페이지네이션의 페이지 수 계산용)
 });
 export type ReviewList = z.infer<typeof ReviewListSchema>;
 

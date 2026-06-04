@@ -56,9 +56,14 @@ describe("review schemas", () => {
     expect(ok.authorName).toBe("김*수");
   });
 
-  it("ReviewList 응답을 검증한다", () => {
-    const list = ReviewListSchema.parse({ items: [] });
+  it("ReviewList 응답을 검증한다 (items + total)", () => {
+    const list = ReviewListSchema.parse({ items: [], total: 0 });
     expect(list.items).toEqual([]);
+    expect(list.total).toBe(0);
+  });
+
+  it("ReviewList는 total이 없으면 거부한다", () => {
+    expect(ReviewListSchema.safeParse({ items: [] }).success).toBe(false);
   });
 
   it("ReviewCreate: 이름 2~10자, 내용 10~500자를 통과시킨다", () => {

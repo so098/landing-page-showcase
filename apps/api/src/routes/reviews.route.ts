@@ -8,14 +8,15 @@ export const reviewsRouter = Router();
 
 const QuerySchema = z.object({
   limit: z.coerce.number().min(1).max(50).default(6),
+  page: z.coerce.number().min(1).default(1),
 });
 
 reviewsRouter.get("/", validateQuery(QuerySchema), async (req, res, next) => {
   try {
-    const { limit } = (
+    const { limit, page } = (
       req as unknown as { valid: { query: z.infer<typeof QuerySchema> } }
     ).valid.query;
-    res.json(await listReviews({ limit }));
+    res.json(await listReviews({ limit, page }));
   } catch (err) {
     next(err);
   }
