@@ -1,0 +1,22 @@
+# 의존성/산출물 — 컨테이너 안에서 새로 설치/생성한다
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+
+# VCS / 로컬 환경
+.git
+.gitignore
+**/.env
+**/.env.*
+
+# 테스트/E2E/문서 — 런타임에 불필요
+**/*.test.ts
+**/*.test.tsx
+apps/web/e2e
+docs
+*.md
+
+# IDE
+.vscode
+.idea
