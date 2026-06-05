@@ -31,9 +31,12 @@ resource "aws_ecs_task_definition" "api" {
     environment = [
       { name = "API_PORT", value = "4000" },
       { name = "WEB_ORIGIN", value = var.web_origin },
+      { name = "ASSETS_BUCKET", value = aws_s3_bucket.assets.id },
+      { name = "AWS_REGION", value = var.region },
     ]
     secrets = [
       { name = "DATABASE_URL", valueFrom = aws_ssm_parameter.database_url.arn },
+      { name = "ANTHROPIC_API_KEY", valueFrom = aws_ssm_parameter.anthropic_api_key.arn },
     ]
     logConfiguration = {
       logDriver = "awslogs"

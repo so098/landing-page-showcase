@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 data "aws_iam_policy_document" "ssm_read" {
   statement {
     actions   = ["ssm:GetParameters"]
-    resources = [aws_ssm_parameter.database_url.arn]
+    resources = [aws_ssm_parameter.database_url.arn, aws_ssm_parameter.anthropic_api_key.arn]
   }
 }
 
@@ -39,4 +39,18 @@ resource "aws_iam_role_policy" "ecs_execution_ssm" {
 resource "aws_iam_role" "ecs_task" {
   name               = "${var.project}-ecs-task"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+# 생성 랜딩 S3 입출력 (assets 버킷의 generated-landings/* )
+data "aws_iam_policy_document" "ecs_task_s3" {
+  statement {
+    actions   = ["s3:PutObject", "s3:GetObject"]
+    resources = ["${aws_s3_bucket.assets.arn}/generated-landings/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ecs_task_s3" {
+  name   = "${var.project}-task-s3"
+  role   = aws_iam_role.ecs_task.id
+  policy = data.aws_iam_policy_document.ecs_task_s3.json
 }

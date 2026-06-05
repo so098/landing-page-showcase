@@ -6,6 +6,7 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
+  idle_timeout       = 180 # 동기 생성(Claude)이 60s↑일 수 있어 완화
 }
 
 # Fargate(awsvpc)는 target_type=ip
