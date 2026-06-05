@@ -17,9 +17,9 @@ variable "domain" {
 }
 
 variable "web_origin" {
-  description = "CORS/Socket.IO 허용 출처(web). Vercel이 서비스하는 정규 도메인."
+  description = "CORS/Socket.IO 허용 출처(web). apex는 www로 308 리다이렉트 → 정규는 www."
   type        = string
-  default     = "https://landingpick.com"
+  default     = "https://www.landingpick.com"
 }
 
 variable "image_tag" {
