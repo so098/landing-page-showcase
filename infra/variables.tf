@@ -23,7 +23,7 @@ variable "web_origin" {
 }
 
 variable "image_tag" {
-  description = "ECS가 배포할 ECR 이미지 태그"
+  description = "ECS가 배포할 ECR 이미지 태그(안정 태그). CD가 이 태그를 갱신하고 force-new-deployment로 재풀."
   type        = string
-  default     = "v1"
+  default     = "prod"
 }

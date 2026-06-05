@@ -1,0 +1,76 @@
+# CD — api를 AWS ECS에 자동 배포. main에 api/shared 변경이 푸시되면:
+#   arm64 이미지 빌드 → ECR 푸시 → DB 마이그레이션 → ECS 롤링 배포.
+# 인증은 OIDC(저장된 키 0개). 러너는 arm64 네이티브(Fargate ARM64와 일치).
+name: Deploy api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - "packages/shared/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # OIDC 토큰 발급
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPO: 345070521201.dkr.ecr.ap-northeast-2.amazonaws.com/melstudio-api
+  CLUSTER: melstudio
+  SERVICE: melstudio-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04-arm # arm64 네이티브 (공개 레포 무료)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AWS 자격증명 (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::345070521201:role/melstudio-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: ECR 로그인
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 이미지 빌드 + 푸시 (arm64)
+        run: |
+          docker build -f apps/api/Dockerfile \
+            -t $ECR_REPO:prod -t $ECR_REPO:${{ github.sha }} .
+          docker push $ECR_REPO:prod
+          docker push $ECR_REPO:${{ github.sha }}
+
+      - name: DB 마이그레이션 (일회성 Fargate 태스크)
+        run: |
+          SUBNETS=$(aws ec2 describe-subnets \
+            --filters "Name=tag:Name,Values=melstudio-public-0,melstudio-public-1" \
+            --query 'Subnets[].SubnetId' --output text | tr '\t' ',')
+          SG=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=melstudio-ecs" \
+            --query 'SecurityGroups[0].GroupId' --output text)
+          TASK=$(aws ecs run-task --cluster $CLUSTER --task-definition $SERVICE \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+            --overrides '{"containerOverrides":[{"name":"api","command":["npm","run","db:deploy","-w","@melstudio/api"]}]}' \
+            --query 'tasks[0].taskArn' --output text)
+          echo "migrate task: $TASK"
+          aws ecs wait tasks-stopped --cluster $CLUSTER --tasks "$TASK"
+          CODE=$(aws ecs describe-tasks --cluster $CLUSTER --tasks "$TASK" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "migrate exit code: $CODE"
+          [ "$CODE" = "0" ] || { echo "::error::마이그레이션 실패"; exit 1; }
+
+      - name: ECS 롤링 배포 (새 :prod 이미지 재풀)
+        run: |
+          aws ecs update-service --cluster $CLUSTER --service $SERVICE \
+            --force-new-deployment >/dev/null
+          aws ecs wait services-stable --cluster $CLUSTER --service $SERVICE
+          echo "✅ 배포 완료"
