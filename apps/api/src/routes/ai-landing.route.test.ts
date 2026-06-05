@@ -45,3 +45,25 @@ describe("POST /api/ai-landing/dry-run", () => {
     expect(row?.jsS3Key).toBe(`generated-landings/${jobId}/script.js`);
   });
 });
+
+describe("GET /api/ai-landing/generated/:jobId/:file", () => {
+  const JOB = "00000000-0000-4000-8000-000000000000";
+
+  it("S3에서 파일을 스트리밍하고 불변 캐시 헤더를 준다", async () => {
+    getObject.mockResolvedValueOnce({
+      body: Readable.from([Buffer.from("<html>ok</html>")]),
+      contentType: "text/html; charset=utf-8",
+    });
+    const res = await request(app).get(`/api/ai-landing/generated/${JOB}/index.html`);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("ok");
+    expect(res.headers["cache-control"]).toContain("immutable");
+    expect(getObject).toHaveBeenCalledWith(`generated-landings/${JOB}/index.html`);
+  });
+
+  it("S3에 없으면 404", async () => {
+    getObject.mockResolvedValueOnce(null);
+    const res = await request(app).get(`/api/ai-landing/generated/${JOB}/script.js`);
+    expect(res.status).toBe(404);
+  });
+});

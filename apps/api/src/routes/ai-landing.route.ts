@@ -4,7 +4,7 @@ import path from "node:path";
 import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import { generateLanding, LandingGenerationRequestSchema } from "@melstudio/ai-landing";
-import { putObject } from "../lib/s3.js";
+import { putObject, getObject } from "../lib/s3.js";
 import { env } from "../lib/env.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -145,23 +145,26 @@ aiLandingRouter.post("/generated/:jobId/confirm", async (req, res, next) => {
   }
 });
 
-aiLandingRouter.get("/generated/:jobId/:file", (req, res, next) => {
+aiLandingRouter.get("/generated/:jobId/:file", async (req, res, next) => {
   try {
     const { jobId, file } = req.params;
     if (!/^[a-f0-9-]{36}$/i.test(jobId)) {
       res.status(400).json({ message: "invalid jobId" });
       return;
     }
-    if (!["index.html", "styles.css", "script.js", "hero.jpg"].includes(file)) {
+    if (!SERVED_FILES.includes(file as (typeof SERVED_FILES)[number])) {
       res.status(404).json({ message: "not found" });
       return;
     }
-    const target = path.join(generatedRoot(), jobId, file);
-    if (!existsSync(target)) {
+    const obj = await getObject(s3KeyFor(jobId, file));
+    if (!obj) {
       res.status(404).json({ message: "not found" });
       return;
     }
-    res.sendFile(target);
+    res.setHeader("Content-Type", obj.contentType ?? CONTENT_TYPE[path.extname(file)] ?? "application/octet-stream");
+    // 생성물은 jobId별 불변 → 적극 캐시(브라우저/CDN). 반복 조회 시 S3 히트 0.
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    obj.body.pipe(res);
   } catch (error) {
     next(error);
   }
