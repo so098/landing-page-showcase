@@ -10,10 +10,16 @@ variable "project" {
   default     = "melstudio"
 }
 
-variable "web_origin" {
-  description = "CORS/Socket.IO 허용 출처(web). 증분5에서 Vercel 도메인으로 갱신."
+variable "domain" {
+  description = "루트 도메인 (web=Vercel, api=api.<domain>=ALB)"
   type        = string
-  default     = "http://localhost:3000"
+  default     = "landingpick.com"
+}
+
+variable "web_origin" {
+  description = "CORS/Socket.IO 허용 출처(web). Vercel이 서비스하는 정규 도메인."
+  type        = string
+  default     = "https://landingpick.com"
 }
 
 variable "image_tag" {
