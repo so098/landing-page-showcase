@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Showcase } from "@melstudio/shared";
+import { confirmGeneratedLanding } from "@/lib/api";
 import { useShowcaseBySlug } from "@/lib/queries";
 import {
   loadOrder,
+  loadGeneratedLanding,
   getRemainingEdits,
   consumeEdit,
   saveRefund,
   getRefund,
   EDIT_LIMIT,
   type SavedOrderState,
+  type GeneratedLandingState,
   type RefundState,
 } from "@/lib/orderStorage";
 import { openChat } from "@/lib/chat";
@@ -31,6 +34,11 @@ export default function OrderResultPage() {
   const [loaded, setLoaded] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
   const [editsLeft, setEditsLeft] = useState(EDIT_LIMIT);
+  const [generatedLanding, setGeneratedLanding] = useState<GeneratedLandingState | null>(null);
+  const desktopPreviewRef = useRef<HTMLDivElement | null>(null);
+  const mobilePreviewRef = useRef<HTMLDivElement | null>(null);
+  const [desktopScale, setDesktopScale] = useState(1);
+  const [mobileScale, setMobileScale] = useState(1);
   // 환불 모달 열림 여부 + 환불 결과(목). refund가 채워지면 "환불 완료" 상태로 본다.
   const [refundOpen, setRefundOpen] = useState(false);
   const [refund, setRefund] = useState<RefundState | null>(null);
@@ -40,6 +48,7 @@ export default function OrderResultPage() {
   useEffect(() => {
     setOrder(loadOrder());
     setEditsLeft(getRemainingEdits());
+    setGeneratedLanding(loadGeneratedLanding());
     setRefund(getRefund());
     setLoaded(true);
   }, []);
@@ -58,6 +67,22 @@ export default function OrderResultPage() {
     setEditsLeft(consumeEdit());
     after();
   }
+
+  // 생성된 iframe은 실제 viewport(데스크탑 1920×1080, 모바일 360×760)를 축소해서 보여준다.
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined") return;
+    const desktopEl = desktopPreviewRef.current;
+    const mobileEl = mobilePreviewRef.current;
+    const update = () => {
+      if (desktopEl) setDesktopScale(desktopEl.clientWidth / 1920);
+      if (mobileEl) setMobileScale(mobileEl.clientWidth / 360);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    if (desktopEl) ro.observe(desktopEl);
+    if (mobileEl) ro.observe(mobileEl);
+    return () => ro.disconnect();
+  }, [generatedLanding?.previewUrl]);
 
   // 모달 ESC 닫기 + 스크롤 잠금
   useEffect(() => {
@@ -152,8 +177,21 @@ export default function OrderResultPage() {
                         https://{order.form.businessName || "my-page"}.com
                       </span>
                     </div>
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-white">
-                      <PagePreview item={generated} variant="desktop" priority interactive />
+                    <div ref={desktopPreviewRef} className="relative aspect-video w-full overflow-hidden bg-white">
+                      {generatedLanding?.previewUrl ? (
+                        <iframe
+                          title="생성된 랜딩페이지 데스크탑 미리보기 — 1920×1080"
+                          src={generatedLanding.previewUrl}
+                          className="absolute left-0 top-0 origin-top-left border-0"
+                          style={{
+                            width: 1920,
+                            height: 1080,
+                            transform: `scale(${desktopScale})`,
+                          }}
+                        />
+                      ) : (
+                        <PagePreview item={generated} variant="desktop" priority interactive />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -169,8 +207,21 @@ export default function OrderResultPage() {
                   </div>
                   <div className="relative w-[200px] rounded-[2rem] border-[6px] border-ink bg-ink p-0 shadow-petal">
                     <div className="absolute left-1/2 top-2 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-white/20" />
-                    <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[1.5rem] bg-white">
-                      <PagePreview item={generated} variant="mobile" interactive />
+                    <div ref={mobilePreviewRef} className="relative aspect-[9/19] w-full overflow-hidden rounded-[1.5rem] bg-white">
+                      {generatedLanding?.previewUrl ? (
+                        <iframe
+                          title="생성된 랜딩페이지 모바일 미리보기 — 360px"
+                          src={generatedLanding.previewUrl}
+                          className="absolute left-0 top-0 origin-top-left border-0"
+                          style={{
+                            width: 360,
+                            height: 760,
+                            transform: `scale(${mobileScale})`,
+                          }}
+                        />
+                      ) : (
+                        <PagePreview item={generated} variant="mobile" interactive />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -291,6 +342,9 @@ export default function OrderResultPage() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (generatedLanding?.jobId) {
+                            void confirmGeneratedLanding(generatedLanding.jobId);
+                          }
                           setModal(null);
                           openChat({
                             greeting: `[이대로 완료하기]를 선택하셨습니다.\n${order.form.businessName} 페이지의 도메인·호스팅 연결을 도와드릴게요. 원하시는 도메인 주소가 있다면 말씀해 주세요!`,

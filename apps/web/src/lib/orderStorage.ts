@@ -27,11 +27,22 @@ export type SavedOrderState = {
 };
 
 const ORDER_KEY = "melstudio:order";
+const GENERATED_KEY = "melstudio:generated-landing";
 const EDITS_KEY = "melstudio:edits-remaining";
 const REFUND_KEY = "melstudio:refund";
 
 // 환불 처리 결과 — 결제가 목(mock) 단계라 환불도 목으로만 기록한다.
 // 실제 환불 API/상태는 5순위 결제 연동 시 백엔드로 승격한다.
+export type GeneratedLandingState = {
+  jobId: string;
+  previewUrl?: string;
+  status: string;
+  modelUsed: string;
+  generatedAt: string;
+  quality: Array<{ name: string; ok: boolean; stdout: string; stderr: string }>;
+  notes: string[];
+};
+
 export type RefundState = {
   reason: string;
   refundedAt: string; // ISO 문자열
@@ -45,7 +56,27 @@ export function saveOrder(state: SavedOrderState): void {
   sessionStorage.setItem(ORDER_KEY, JSON.stringify(state));
   // 새 페이지가 생성되면 수정 횟수도 초기화하고, 이전 환불 기록도 비운다
   sessionStorage.setItem(EDITS_KEY, String(EDIT_LIMIT));
+  sessionStorage.removeItem(GENERATED_KEY);
   sessionStorage.removeItem(REFUND_KEY);
+}
+
+export function saveGeneratedLanding(state: Omit<GeneratedLandingState, "generatedAt">): GeneratedLandingState {
+  const next: GeneratedLandingState = { ...state, generatedAt: new Date().toISOString() };
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem(GENERATED_KEY, JSON.stringify(next));
+  }
+  return next;
+}
+
+export function loadGeneratedLanding(): GeneratedLandingState | null {
+  if (typeof window === "undefined") return null;
+  const raw = sessionStorage.getItem(GENERATED_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as GeneratedLandingState;
+  } catch {
+    return null;
+  }
 }
 
 // 환불 처리(목) — 사유를 시각과 함께 저장한다. 실제 환불 API는 아직 없음.

@@ -65,3 +65,30 @@ model Message {
 
   @@index([roomId, createdAt])
 }
+
+// ── AI 랜딩페이지 생성 결과 ──
+// S3 연결 전 단계에서는 로컬 생성 파일 경로/preview URL과 주문서 snapshot을 RDS에 먼저 저장한다.
+// 이후 S3가 붙으면 html/css/js local path 대신 s3Key 필드를 채워 영구 서빙으로 전환한다.
+
+model GeneratedPage {
+  id            String   @id @default(cuid())
+  jobId         String   @unique
+  status        String // generated | dry_run | failed_quality_gate | confirmed | archived
+  modelUsed     String
+  previewUrl    String?
+  outputDir     String?
+  indexHtmlPath String?
+  stylesCssPath String?
+  scriptJsPath  String?
+  htmlS3Key     String?
+  cssS3Key      String?
+  jsS3Key       String?
+  orderSnapshot Json
+  quality       Json
+  notes         Json
+  createdAt     DateTime @default(now())
+  confirmedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+}

@@ -5,6 +5,7 @@ import { categoriesRouter } from "./routes/categories.route.js";
 import { showcasesRouter } from "./routes/showcases.route.js";
 import { reviewsRouter } from "./routes/reviews.route.js";
 import { chatRouter } from "./routes/chat.route.js";
+import { aiLandingRouter } from "./routes/ai-landing.route.js";
 import { errorHandler } from "./middleware/error.js";
 
 export function createApp(): Express {
@@ -20,6 +21,7 @@ export function createApp(): Express {
   app.use("/api/showcases", showcasesRouter);
   app.use("/api/reviews", reviewsRouter);
   app.use("/api/chat", chatRouter);
+  app.use("/api/ai-landing", aiLandingRouter);
 
   app.use(errorHandler);
   return app;

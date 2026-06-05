@@ -7,6 +7,7 @@ import {
   type ShowcaseList,
   type ReviewList,
 } from "@melstudio/shared";
+import type { OrderForm } from "./order";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -56,4 +57,62 @@ export async function fetchReviews(
   const res = await fetch(`${BASE}/api/reviews?${q.toString()}`, init);
   if (!res.ok) throw new Error(`reviews ${res.status}`);
   return ReviewListSchema.parse(await res.json());
+}
+
+export type AiLandingGenerationResult = {
+  jobId: string;
+  status: "generated" | "dry_run" | "failed_quality_gate";
+  previewUrl?: string;
+  modelUsed: string;
+  quality: Array<{ name: string; ok: boolean; stdout: string; stderr: string }>;
+  notes: string[];
+};
+
+export async function confirmGeneratedLanding(jobId: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/ai-landing/generated/${jobId}/confirm`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error(`confirm generated landing ${res.status}`);
+}
+
+export async function generateAiLandingFromOrder(order: OrderForm): Promise<AiLandingGenerationResult> {
+  const infoText = order.infoSections
+    ? Object.entries(order.infoSections)
+        .filter(([, value]) => value.trim())
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n")
+    : "";
+
+  const request = {
+    industry: order.industry,
+    goal: [
+      order.purpose,
+      order.targetMessage && `핵심 메시지: ${order.targetMessage}`,
+      order.targetPain && `고객 고민: ${order.targetPain}`,
+      order.targetHesitation && `망설임: ${order.targetHesitation}`,
+      infoText && `포함 정보:\n${infoText}`,
+      order.copyText && `직접 작성 문구: ${order.copyText}`,
+    ].filter(Boolean).join("\n"),
+    brandName: order.businessName,
+    templateSlug: order.showcaseId,
+    tone: order.moods?.join(", "),
+    targetAudience: [order.targetProfile, order.links && `참고 링크: ${order.links}`].filter(Boolean).join("\n"),
+    cta: order.purpose,
+    dryRun: false,
+    runFoldCheck: false,
+    repairAttempts: 1,
+    imageAssets: [],
+  };
+
+  const res = await fetch(`${BASE}/api/ai-landing/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!res.ok) throw new Error(`ai landing ${res.status}`);
+  const data = await res.json() as AiLandingGenerationResult;
+  if (data.previewUrl?.startsWith("/")) {
+    data.previewUrl = `${BASE}${data.previewUrl}`;
+  }
+  return data;
 }

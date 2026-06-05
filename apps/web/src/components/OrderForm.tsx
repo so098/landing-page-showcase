@@ -15,7 +15,8 @@ import {
   MATERIAL_TYPES,
   type Purpose,
 } from "@/lib/order";
-import { saveOrder, loadOrder } from "@/lib/orderStorage";
+import { generateAiLandingFromOrder } from "@/lib/api";
+import { saveOrder, loadOrder, saveGeneratedLanding } from "@/lib/orderStorage";
 import { openChat } from "@/lib/chat";
 import PagePreview from "./PagePreview";
 
@@ -65,6 +66,7 @@ export default function OrderForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // 수정 모드: 저장된 주문서 내용 복원
   useEffect(() => {
@@ -100,7 +102,7 @@ export default function OrderForm({
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const infoSections: Record<string, string> = {};
     for (const key of selectedInfo) infoSections[key] = infoContents[key] ?? "";
 
@@ -146,6 +148,7 @@ export default function OrderForm({
 
     // 검증 통과 → 주문서 내용 저장 (결과 페이지/수정하기에서 사용)
     setErrors({});
+    setGenerationError(null);
     saveOrder({
       showcaseId: showcase?.id,
       form,
@@ -167,11 +170,28 @@ export default function OrderForm({
       return;
     }
 
-    // AI 생성(목): 잠시 생성 중 화면을 보여준 뒤 결과 페이지로 이동
+    // AI 생성: 현재는 이미지 없이 dry-run 생성 API에 연결한다.
     setGenerating(true);
-    setTimeout(() => {
+    try {
+      const generation = await generateAiLandingFromOrder(result.data);
+      saveGeneratedLanding({
+        jobId: generation.jobId,
+        previewUrl: generation.previewUrl,
+        status: generation.status,
+        modelUsed: generation.modelUsed,
+        quality: generation.quality,
+        notes: generation.notes,
+      });
       router.push("/order/result");
-    }, 2800);
+    } catch (error) {
+      setGenerating(false);
+      setGenerationError(
+        error instanceof Error
+          ? `랜딩페이지 생성에 실패했어요: ${error.message}`
+          : "랜딩페이지 생성에 실패했어요. API 서버가 켜져 있는지 확인해 주세요.",
+      );
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   /* ── 생성 중 화면 (목) ── */
@@ -187,7 +207,9 @@ export default function OrderForm({
         <p className="mt-3 text-sm leading-relaxed text-ink-muted/70">
           <strong className="text-accent">{form.businessName}</strong>의 랜딩페이지를 생성 중이에요.
           <br />
-          잠시만 기다려 주세요…
+          AI 생성은 보통 1~3분 정도 걸려요.
+          <br />
+          내용이 많거나 품질 검수가 필요한 경우 최대 5분까지 걸릴 수 있어요.
         </p>
         <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-accent/15">
           <div className="h-full w-2/3 animate-pulse rounded-full bg-accent-grad" />
@@ -242,6 +264,11 @@ export default function OrderForm({
     <>
       {/* ── 페이지 타이틀 ── */}
       <div className="animate-fade-up text-center">
+        {generationError && (
+          <div className="mb-6 rounded-2xl border border-accent/20 bg-white px-4 py-3 text-sm font-semibold text-accent shadow-soft">
+            {generationError}
+          </div>
+        )}
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
           랜딩페이지 <span className="text-accent">주문서</span>
         </h1>

@@ -1,0 +1,6 @@
+# 클립아트 다운로더/가공 스크립트 의존성
+# 설치:  python3 -m pip install -r requirements-clipart.txt
+requests>=2.31
+urllib3>=2.0
+websocket-client>=1.7
+boto3>=1.34        # prepare_clipart_assets_for_service.py --upload-s3 에 필요
