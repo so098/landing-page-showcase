@@ -96,22 +96,24 @@
 
 ---
 
-## 3순위: 배포 + CI/CD
+## 3순위: 배포 + CI/CD  ✅ 완료 (2026-06-05)
 
 > 클릭 가능한 URL 없는 포트폴리오는 평가받지 못함. 채용담당자는 docker compose 안 돌림.
+> **방향 변경**: Railway/Render/Neon → **하이브리드(web=Vercel / api=AWS ECS·Fargate+ALB / DB=AWS RDS), 전부 Terraform IaC**. 사유: 실매출 운영 + AWS 경험. 설계서: `../specs/2026-06-04-monetization-deployment-design.md`.
 
 **작업**
 
-- [ ] web → Vercel / api → Railway 또는 Render / DB → Neon (Postgres)
-- [ ] 환경변수 정리 (NEXT_PUBLIC_API_URL, DATABASE_URL, WEB_ORIGIN — 배포 도메인 기준)
-- [ ] Socket.IO가 배포 환경에서 동작하는지 (Railway/Render는 WebSocket 지원 확인)
-- [ ] GitHub Actions CI: PR마다 lint → 테스트(web + api) → 빌드 자동 실행
-- [ ] README 최상단에 라이브 URL + 데모 GIF
+- [x] web → **Vercel** (www.landingpick.com) / api → **AWS ECS/Fargate+ALB** (api.landingpick.com) / DB → **AWS RDS Postgres**
+- [x] 환경변수 정리 (NEXT_PUBLIC_API_URL, DATABASE_URL=SSM SecureString, WEB_ORIGIN=https://www.landingpick.com)
+- [x] Socket.IO 배포 환경: ALB가 WebSocket 지원(리스너 통과). *프로덕션 채팅 end-to-end 수동확인은 잔여*
+- [x] GitHub Actions CI: PR/푸시마다 web·api·shared 테스트 + 빌드 (`ci.yml`)
+- [x] **CD 추가**: `git push`→OIDC→빌드→ECR→마이그레이션→ECS 무중단 롤링 (`deploy.yml`)
+- [ ] README 최상단에 라이브 URL + 데모 GIF *(잔여)*
 
 **테스트 (이 단계에 포함)**
 
-- [ ] CI에서 기존 모든 테스트(API 26개 + 1·2순위에서 만든 프론트 테스트)가 자동으로 돌게 구성
-- [ ] 배포 후 smoke 테스트: 라이브 URL 대상 Playwright 핵심 흐름 1개
+- [x] CI에서 기존 모든 테스트(api+shared+web)가 자동 실행
+- [ ] 배포 후 smoke 테스트: 라이브 URL 대상 Playwright 핵심 흐름 1개 *(잔여)*
 
 **사람이 확인할 것**
 

@@ -1,7 +1,7 @@
 # 설계서 — 광고 기반 온라인 주문 매출화 + 하이브리드 배포(AWS)
 
 - 작성일: 2026-06-04
-- 상태: 설계 (사용자 리뷰 대기)
+- 상태: **Phase 1(배포+CI/CD) 완료 (2026-06-05)** · 다음 Phase 2(결제). 아래 Phase 1 섹션에 완료 현황.
 - 종류: 프로그램 설계서 (여러 하위 시스템을 단계로 분해 — 1단계만 이후 상세 구현 스펙으로 전개)
 
 ## 1. 배경과 목표
@@ -55,7 +55,24 @@
 
 각 단계는 **스펙 → 구현(테스트 포함) → 측정 → 사람 확인** 사이클을 따른다. 단계 사이의 순서는 기술적 의존성으로 결정한다.
 
-### Phase 1 — 하이브리드 배포 + IaC + CD  ★ 먼저
+### Phase 1 — 하이브리드 배포 + IaC + CD  ✅ 완료 (2026-06-05)
+
+> **완료 현황**: 라이브 — web `https://www.landingpick.com`(Vercel) ↔ api `https://api.landingpick.com`(AWS) ↔ RDS(시드 1039). 전부 Terraform(`infra/*.tf`)으로 구성.
+>
+> | 구성 | 실제 결과 |
+> |---|---|
+> | web | Vercel, 커스텀 도메인 www.landingpick.com, `NEXT_PUBLIC_API_URL` 연결 |
+> | api | ECS/Fargate(ARM64) + ALB, HTTPS(ACM, api.landingpick.com), 80→443 리다이렉트 |
+> | DB | RDS Postgres(db.t4g.micro, 프리티어, 사설 서브넷) + SSM SecureString `DATABASE_URL` |
+> | 네트워크 | VPC 10.0.0.0/16, 퍼블릭/사설 서브넷 각2, SG 체인(ALB→ECS→RDS), **NAT 없음** |
+> | IaC | Terraform(awscli+tf 로컬), `terraform apply`는 사용자 직접 |
+> | CI | GitHub Actions `ci.yml` — web·api·shared 테스트(api는 postgres 서비스+migrate+seed) |
+> | CD | `deploy.yml` — OIDC(키 0개), arm64 네이티브 러너, 빌드→ECR `:prod`→마이그레이션→ECS force-new-deployment. `git push`→자동배포 검증됨 |
+> | 마이그레이션/시드 | RDS 비공개라 **VPC 내 일회성 ECS run-task**로 적용 |
+> | 도메인 | landingpick.com(GoDaddy DNS). apex→www 308. api는 GoDaddy에 CNAME 수동 추가 |
+>
+> **남은 잔여(소소)**: 라이브 URL 대상 Playwright smoke 1개(미작성), README 라이브 URL/GIF(미반영). 둘 다 Phase 2와 병행 가능.
+
 - **왜 먼저**: 결제 웹훅/서버검증을 안정적으로 받으려면 **공개 HTTPS api가 선행**되어야 한다. 또한 실배포 환경이 있어야 이후 결제를 실조건에서 검증한다. AWS 학습·CI/CD 가치도 큼.
 - web → Vercel 연결(프로젝트 import, 환경변수, 커스텀 도메인/SSL)
 - api → AWS 컨테이너화(Dockerfile) → ECR → **ECS/Fargate 서비스 + ALB**(WebSocket 지원, 헬스체크/롤링배포)
