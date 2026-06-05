@@ -17,6 +17,12 @@ apps/web/e2e
 docs
 *.md
 
+# ai-landing: api 런타임에 불필요한 대용량/운영자 자산
+# (클립아트 이미지 수백 MB·생성물·파이썬 다운로더 스크립트 — 이미지에 넣지 않음)
+packages/ai-landing/assets
+packages/ai-landing/generated
+packages/ai-landing/scripts
+
 # IDE
 .vscode
 .idea

@@ -15,10 +15,13 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
+COPY packages/ai-landing/package.json packages/ai-landing/
 RUN npm ci
 
 # 2) 런타임에 필요한 소스만 복사 (web 소스는 제외)
+# ai-landing은 src만 들어옴(.dockerignore가 assets/generated/scripts 제외)
 COPY packages/shared packages/shared
+COPY packages/ai-landing packages/ai-landing
 COPY apps/api apps/api
 
 # 3) 컨테이너(linux) 안에서 Prisma Client 생성 → linux 엔진이 정확히 박힌다
