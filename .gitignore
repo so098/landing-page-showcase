@@ -32,3 +32,18 @@ apps/web/blob-report/
 .learnings/
 .playwright-mcp/
 /*.png
+
+# AI landing generation outputs
+/generated/
+apps/api/generated/
+packages/ai-landing/generated/
+
+# 클립아트 다운로드 자산 (라이선스 — 로컬 전용, 공개 레포 커밋 절대 금지)
+packages/ai-landing/assets/clipart/
+packages/ai-landing/assets/*-manifest.json
+packages/ai-landing/dist/service-assets/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
