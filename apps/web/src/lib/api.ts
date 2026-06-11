@@ -2,10 +2,15 @@ import {
   CategorySchema,
   ShowcaseListSchema,
   ReviewListSchema,
+  OrderCreatedSchema,
+  OrderSummarySchema,
   type Category,
   type Showcase,
   type ShowcaseList,
   type ReviewList,
+  type OrderCreate,
+  type OrderCreated,
+  type OrderSummary,
 } from "@melstudio/shared";
 import type { OrderForm } from "./order";
 
@@ -67,6 +72,52 @@ export type AiLandingGenerationResult = {
   quality: Array<{ name: string; ok: boolean; stdout: string; stderr: string }>;
   notes: string[];
 };
+
+// ── 주문 / 결제 ──
+// 모두 세션 쿠키가 필요하므로 credentials: "include".
+
+// 주문 생성 — 서버가 금액을 계산. 응답은 결제창 입력값.
+export async function createOrder(input: OrderCreate): Promise<OrderCreated> {
+  const res = await fetch(`${BASE}/api/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(`create order ${res.status}`);
+  return OrderCreatedSchema.parse(await res.json());
+}
+
+// 마이페이지 — 내 주문/결제/진행단계 목록.
+export async function fetchMyOrders(): Promise<OrderSummary[]> {
+  const res = await fetch(`${BASE}/api/orders/mine`, { credentials: "include" });
+  if (!res.ok) throw new Error(`my orders ${res.status}`);
+  const data = (await res.json()) as { items: unknown };
+  return OrderSummarySchema.array().parse(data.items);
+}
+
+// 전액 환불.
+export async function refundOrder(orderId: string, reason: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/orders/${orderId}/refund`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) throw new Error(`refund ${res.status}`);
+}
+
+// 결제 활성 여부 — PG 키 미설정 시 false(결제 버튼 비활성/대체 흐름).
+export async function fetchPaymentEnabled(): Promise<boolean> {
+  try {
+    const res = await fetch(`${BASE}/api/payments/enabled`, { credentials: "include" });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { enabled?: boolean };
+    return Boolean(data.enabled);
+  } catch {
+    return false;
+  }
+}
 
 export async function confirmGeneratedLanding(jobId: string): Promise<void> {
   const res = await fetch(`${BASE}/api/ai-landing/generated/${jobId}/confirm`, {

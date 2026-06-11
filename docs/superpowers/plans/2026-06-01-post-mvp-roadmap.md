@@ -150,26 +150,28 @@
 
 ---
 
-## 5순위: 결제 연동 (PortOne 테스트모드)
+## 5순위: 결제 연동 (PortOne 테스트모드) — ✅ 구현 완료 (2026-06-11)
 
 > 결제 위젯 연동 + 결제 상태머신(시도/성공/실패/취소) 처리 — 실무 연동 경험.
+> 설계: `docs/superpowers/specs/2026-06-11-landing-page-payment-design.md`
+> 외부 설정: `docs/payments/portone-setup.md`. PG SDK는 쓰되 신뢰 경계(서버 검증·멱등·상태머신)는 직접 구현.
 
 **작업**
 
-- [ ] PortOne 가입 + 테스트 채널 키 발급 **(사람이 직접)**
-- [ ] api: `Order`/`Payment` 모델 + `POST /api/orders` + `POST /api/payments/verify` (서버 금액 검증)
-- [ ] web: 주문서 제출 → 결제창 → 성공 시 생성 진행 / 실패·취소 처리
-- [ ] 마이페이지 결제 내역 실데이터화
+- [ ] PortOne 가입 + 테스트 채널 키 발급 **(사람이 직접 — `docs/payments/portone-setup.md`)**
+- [x] api: `Order`/`Payment` 모델 + `POST /api/orders`(서버 금액 계산) + `confirmPayment`(단건조회 대조) + 웹훅(raw body 서명검증) + 전액 환불. gateway 추상화(PortOne) + 테스트 주입.
+- [x] web: 주문서 제출 → (결제 활성 시)주문 생성 → PortOne 결제창 → 성공 시 생성 / 실패·취소 안내. 결제 비활성 시 폴백.
+- [x] 마이페이지 결제 내역 실데이터화(`GET /api/orders/mine`)
 
 **테스트 (이 단계에 포함)**
 
-- [ ] api: 주문 생성/금액 검증 테스트 (위변조 금액 거부)
-- [ ] web: 결제 상태별 UI 분기 RTL 테스트
-- [ ] Playwright: 주문 → 테스트 결제 → 완료 흐름
+- [x] api: 주문 생성/금액 검증 테스트 (★위변조 금액 거부 + 콜백·웹훅 멱등)
+- [x] web: 결제 상태별 UI 분기 RTL 테스트(OrderForm 결제/폴백/취소, mypage, payment lib)
+- [ ] Playwright: 주문 → 테스트 결제 → 완료 흐름 (실연동은 수동 스모크로 대체)
 
-**사람이 확인할 것**
+**사람이 확인할 것 (키 발급 후 수동 스모크 — `docs/payments/portone-setup.md`)**
 
-1. 테스트 카드로 결제 → 성공 → 마이페이지에서 PAID 확인 → 취소 시 진행 안 됨
+1. 테스트 카드로 결제 → 성공 → 마이페이지에서 PAID 확인 → 취소 시 진행 안 됨 → 환불 시 REFUNDED
 
 ---
 

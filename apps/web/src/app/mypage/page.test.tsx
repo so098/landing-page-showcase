@@ -26,6 +26,34 @@ vi.mock("@/lib/auth", () => ({
   getEnabledProviders: async () => ["google", "kakao"],
 }));
 
+// 주문 목록 API를 가짜로 대체 — 완료(step 4) 1건 + 진행 중(step 2) 1건.
+import type { OrderSummary } from "@melstudio/shared";
+const MOCK_ORDERS: OrderSummary[] = [
+  {
+    id: "o-done",
+    orderName: "달콤 베이커리 랜딩페이지",
+    amount: 10000,
+    status: "PAID",
+    paidAt: "2026-05-12T00:00:00.000Z",
+    step: 4, // 오픈 완료 → 리뷰 작성 노출
+    generatedJobId: "job-1",
+    createdAt: "2026-05-12T00:00:00.000Z",
+  },
+  {
+    id: "o-progress",
+    orderName: "온유 한방카페 랜딩페이지",
+    amount: 20000,
+    status: "PAID",
+    paidAt: "2026-05-30T00:00:00.000Z",
+    step: 2, // 진행 중 → 리뷰 버튼 없음
+    generatedJobId: "job-2",
+    createdAt: "2026-05-30T00:00:00.000Z",
+  },
+];
+vi.mock("@/lib/api", () => ({
+  fetchMyOrders: async () => MOCK_ORDERS,
+}));
+
 import MyPage from "./page";
 
 describe("MyPage 리뷰 작성", () => {
@@ -36,24 +64,22 @@ describe("MyPage 리뷰 작성", () => {
 
   it("완료된 주문 카드에만 리뷰 작성 버튼을 노출한다", async () => {
     render(<MyPage />);
-    // 로그인 상태 반영 대기
-    await screen.findByText(/김민수/);
-    // MOCK_PAYMENTS 중 step=4(오픈 완료)는 1건뿐 → 리뷰 작성 버튼 1개
+    // 주문 로드 대기 — 완료 주문 카드가 뜰 때까지
+    await screen.findByText(/달콤 베이커리 랜딩페이지/);
+    // step=4(오픈 완료)는 1건뿐 → 리뷰 작성 버튼 1개
     const buttons = screen.getAllByRole("button", { name: /리뷰 작성/ });
     expect(buttons).toHaveLength(1);
   });
 
   it("리뷰 작성 버튼을 누르면 모달이 열린다", async () => {
     render(<MyPage />);
-    await screen.findByText(/김민수/);
-    await userEvent.click(screen.getByRole("button", { name: /리뷰 작성/ }));
+    await userEvent.click(await screen.findByRole("button", { name: /리뷰 작성/ }));
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
   it("모달에서 제출하면 모달이 닫히고 감사 토스트가 뜬다", async () => {
     render(<MyPage />);
-    await screen.findByText(/김민수/);
-    await userEvent.click(screen.getByRole("button", { name: /리뷰 작성/ }));
+    await userEvent.click(await screen.findByRole("button", { name: /리뷰 작성/ }));
 
     const dialog = screen.getByRole("dialog");
     await userEvent.type(

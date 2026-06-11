@@ -35,6 +35,9 @@ const REFUND_KEY = "melstudio:refund";
 // 실제 환불 API/상태는 5순위 결제 연동 시 백엔드로 승격한다.
 export type GeneratedLandingState = {
   jobId: string;
+  // 결제로 생성된 경우의 서버 주문 ID — 결과 페이지에서 실제 환불 API 호출에 쓴다.
+  // (결제 비활성/데모 흐름에서는 없을 수 있음 → 목 환불로 폴백)
+  orderId?: string;
   previewUrl?: string;
   status: string;
   modelUsed: string;
