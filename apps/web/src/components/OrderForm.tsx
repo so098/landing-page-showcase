@@ -15,7 +15,13 @@ import {
   MATERIAL_TYPES,
   type Purpose,
 } from "@/lib/order";
-import { generateAiLandingFromOrder } from "@/lib/api";
+import {
+  generateAiLandingFromOrder,
+  createOrder,
+  fetchPaymentEnabled,
+} from "@/lib/api";
+import { startPayment } from "@/lib/payment";
+import { getUser, startLogin } from "@/lib/auth";
 import { saveOrder, loadOrder, saveGeneratedLanding } from "@/lib/orderStorage";
 import { openChat } from "@/lib/chat";
 import PagePreview from "./PagePreview";
@@ -170,12 +176,49 @@ export default function OrderForm({
       return;
     }
 
-    // AI 생성: 현재는 이미지 없이 dry-run 생성 API에 연결한다.
+    // ── 결제 게이트 ──
+    // 결제가 설정돼 있으면: 로그인 → 주문 생성(서버가 금액 계산) → 결제창 → 확정 후 생성.
+    // 결제가 비활성(개발/키 미설정)이면: 기존 직접 생성 흐름으로 폴백.
+    let paidOrderId: string | undefined;
+    if (await fetchPaymentEnabled()) {
+      if (!getUser()) {
+        // 비로그인 → 로그인 유도(돌아올 경로를 현재 주문서로). 결제는 로그인 사용자에 귀속.
+        setGenerationError("결제를 진행하려면 로그인이 필요해요. 로그인 후 다시 시도해 주세요.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        startLogin("kakao");
+        return;
+      }
+      try {
+        const created = await createOrder({
+          showcaseId: showcase?.id,
+          mode: "ai",
+          // 디자인을 다시 골라 만드는 수정 모드(restore)는 "추가 제작"으로 과금.
+          orderType: restore ? "additional" : "new",
+          pageCount: pages.length,
+          orderName: `${form.businessName} 랜딩페이지`,
+          orderSnapshot: result.data,
+        });
+        const outcome = await startPayment(created);
+        if (!outcome.ok) {
+          setGenerationError(`결제가 완료되지 않았어요: ${outcome.reason}`);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        paidOrderId = created.orderId;
+      } catch {
+        setGenerationError("결제 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
+
+    // AI 생성: 결제 확정(또는 결제 비활성) 후 생성 API에 연결한다.
     setGenerating(true);
     try {
       const generation = await generateAiLandingFromOrder(result.data);
       saveGeneratedLanding({
         jobId: generation.jobId,
+        orderId: paidOrderId,
         previewUrl: generation.previewUrl,
         status: generation.status,
         modelUsed: generation.modelUsed,

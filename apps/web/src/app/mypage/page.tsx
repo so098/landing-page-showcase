@@ -4,43 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 import ReviewModal from "@/components/ReviewModal";
 import Toast from "@/components/Toast";
 import { getUser, startLogin, subscribe, getEnabledProviders, type User } from "@/lib/auth";
-import type { OAuthProviderName } from "@melstudio/shared";
+import { fetchMyOrders } from "@/lib/api";
+import type { OAuthProviderName, OrderSummary } from "@melstudio/shared";
 
 // 진행 단계 정의 — 주문 접수 → AI 생성 완료 → 호스팅/도메인 연결 → 사이트 오픈
 const STEPS = ["주문 접수", "AI 생성 완료", "호스팅·도메인 연결 중", "사이트 오픈 완료"] as const;
 
-type Payment = {
-  id: string;
-  pageName: string;
-  amount: number; // 원
-  paidAt: string; // 결제일
-  step: number; // 1~4, 현재 도달한(또는 완료한) 단계
-};
-
-// 목(mock) 결제 내역 — API 연동 시 사용자별 주문 조회로 대체 예정
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: "ord-001",
-    pageName: "달콤 베이커리 랜딩페이지",
-    amount: 10000,
-    paidAt: "2026.05.12",
-    step: 4, // 사이트 오픈 완료
-  },
-  {
-    id: "ord-002",
-    pageName: "포레스트 필라테스 랜딩페이지",
-    amount: 50000,
-    paidAt: "2026.05.27",
-    step: 3, // 호스팅·도메인 연결 중
-  },
-  {
-    id: "ord-003",
-    pageName: "온유 한방카페 랜딩페이지",
-    amount: 10000,
-    paidAt: "2026.05.30",
-    step: 2, // AI 생성 완료
-  },
-];
+// 결제일 표시 — ISO 8601 → "2026.05.12". 미결제(null)는 "-".
+function formatPaidAt(iso: string | null): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
+}
 
 export default function MyPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -125,9 +101,26 @@ function LoggedOut() {
 /* ── 로그인 상태 ── */
 function LoggedIn({ user }: { user: User }) {
   // 리뷰 작성 대상 주문(모달 open 여부 겸용) — null이면 모달 닫힘
-  const [reviewTarget, setReviewTarget] = useState<Payment | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<OrderSummary | null>(null);
   // 감사 토스트 표시 여부
   const [showThanks, setShowThanks] = useState(false);
+  // 실데이터 주문 목록
+  const [orders, setOrders] = useState<OrderSummary[] | null>(null);
+
+  // 내 주문/결제 내역을 서버에서 불러온다.
+  useEffect(() => {
+    let active = true;
+    fetchMyOrders()
+      .then((list) => {
+        if (active) setOrders(list);
+      })
+      .catch(() => {
+        if (active) setOrders([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // 제출 성공 → 모달 닫고 감사 토스트. onSuccess는 ReviewForm effect에서
   // 호출되므로 안정적인 참조가 되도록 useCallback으로 고정한다.
@@ -158,27 +151,37 @@ function LoggedIn({ user }: { user: User }) {
           <h2 className="font-display text-lg font-bold text-ink">
             내가 결제한 웹페이지
           </h2>
-          <span className="rounded-full bg-divider/60 px-3 py-1 font-display text-xs font-bold text-accent-deep">
-            총 {MOCK_PAYMENTS.length}건
-          </span>
+          {orders && (
+            <span className="rounded-full bg-divider/60 px-3 py-1 font-display text-xs font-bold text-accent-deep">
+              총 {orders.length}건
+            </span>
+          )}
         </div>
 
-        <div className="mt-5 flex flex-col gap-5">
-          {MOCK_PAYMENTS.map((p, i) => (
-            <PaymentCard
-              key={p.id}
-              payment={p}
-              delay={i * 80}
-              onWriteReview={() => setReviewTarget(p)}
-            />
-          ))}
-        </div>
+        {orders === null ? (
+          <p className="mt-8 text-center text-sm text-ink-muted/50">불러오는 중…</p>
+        ) : orders.length === 0 ? (
+          <p className="mt-8 text-center text-sm text-ink-muted/55">
+            아직 결제한 웹페이지가 없어요.
+          </p>
+        ) : (
+          <div className="mt-5 flex flex-col gap-5">
+            {orders.map((o, i) => (
+              <PaymentCard
+                key={o.id}
+                order={o}
+                delay={i * 80}
+                onWriteReview={() => setReviewTarget(o)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 리뷰 작성 모달 — 대상 주문이 선택됐을 때만 연다 */}
       <ReviewModal
         open={reviewTarget !== null}
-        pageName={reviewTarget?.pageName ?? ""}
+        pageName={reviewTarget?.orderName ?? ""}
         authorName={user.name}
         onClose={() => setReviewTarget(null)}
         onSubmitted={handleSubmitted}
@@ -197,15 +200,15 @@ function LoggedIn({ user }: { user: User }) {
 
 /* ── 결제/주문 카드 ── */
 function PaymentCard({
-  payment,
+  order,
   delay,
   onWriteReview,
 }: {
-  payment: Payment;
+  order: OrderSummary;
   delay: number;
   onWriteReview: () => void;
 }) {
-  const done = payment.step >= STEPS.length;
+  const done = order.step >= STEPS.length;
   return (
     <div
       className="animate-fade-up rounded-[18px] border border-accent/15 bg-pearl p-5 shadow-soft sm:p-6"
@@ -216,7 +219,7 @@ function PaymentCard({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-display text-base font-bold text-ink">
-              {payment.pageName}
+              {order.orderName}
             </h3>
             {done ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent-grad px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
@@ -225,17 +228,25 @@ function PaymentCard({
                 </svg>
                 오픈 완료
               </span>
+            ) : order.status === "REFUNDED" ? (
+              <span className="rounded-full bg-ink-muted/40 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                환불됨
+              </span>
+            ) : order.status === "PENDING" ? (
+              <span className="rounded-full bg-ink-muted/30 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                결제 대기
+              </span>
             ) : (
               <span className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
                 진행 중
               </span>
             )}
           </div>
-          <p className="mt-1.5 text-xs text-ink-muted/50">결제일 {payment.paidAt}</p>
+          <p className="mt-1.5 text-xs text-ink-muted/50">결제일 {formatPaidAt(order.paidAt)}</p>
         </div>
         <div className="text-left sm:text-right">
           <p className="font-display text-xl font-bold text-accent">
-            {payment.amount.toLocaleString("ko-KR")}원
+            {order.amount.toLocaleString("ko-KR")}원
           </p>
           <p className="text-[11px] text-ink-muted/45">결제 금액</p>
         </div>
@@ -243,7 +254,7 @@ function PaymentCard({
 
       {/* 진행 단계 스텝퍼 */}
       <div className="mt-5 border-t border-accent/10 pt-5">
-        <Stepper current={payment.step} />
+        <Stepper current={order.step} />
       </div>
 
       {/* 리뷰 작성 버튼 — 사이트 오픈이 완료된 주문에만 노출한다.

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Showcase } from "@melstudio/shared";
-import { confirmGeneratedLanding } from "@/lib/api";
+import { confirmGeneratedLanding, refundOrder } from "@/lib/api";
 import { useShowcaseBySlug } from "@/lib/queries";
 import {
   loadOrder,
@@ -53,9 +53,19 @@ export default function OrderResultPage() {
     setLoaded(true);
   }, []);
 
-  // 환불 확정(목) — 결제가 목 단계라 실제 환불 API는 호출하지 않고 sessionStorage에만 기록한다.
-  // 실제 환불 처리는 5순위 결제 연동 시 백엔드 API와 함께 붙인다.
-  function handleRefund(reason: string) {
+  // 환불 확정 — 결제로 생성된 주문(orderId 있음)이면 실제 전액 환불 API를 호출하고,
+  // 결제 비활성/데모 흐름(orderId 없음)이면 기존 목 환불로 폴백한다.
+  async function handleRefund(reason: string) {
+    const orderId = generatedLanding?.orderId;
+    if (orderId) {
+      try {
+        await refundOrder(orderId, reason);
+      } catch {
+        // 환불 실패 시 상태를 바꾸지 않고 모달만 닫는다(서버 상태가 진실).
+        setRefundOpen(false);
+        return;
+      }
+    }
     setRefund(saveRefund(reason));
     setRefundOpen(false);
     setShowRefunded(true);

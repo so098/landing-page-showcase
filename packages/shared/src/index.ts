@@ -92,3 +92,74 @@ export const ChatRoomSchema = z.object({
   updatedAt: z.string(), // ISO 8601
 });
 export type ChatRoom = z.infer<typeof ChatRoomSchema>;
+
+// ── ⑤ 주문 / 결제 (PortOne) ──
+
+export const ORDER_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED"] as const;
+export const OrderStatusSchema = z.enum(ORDER_STATUSES);
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+// 주문 종류 — 금액 계산 분기. new=신규 제작, additional=추가 제작(재생성).
+export const ORDER_TYPES = ["new", "additional"] as const;
+export const OrderTypeSchema = z.enum(ORDER_TYPES);
+export type OrderType = (typeof ORDER_TYPES)[number];
+
+// 제작 방식 — ai=AI 생성(온라인 결제), human=사람과 함께(채팅 상담, 온라인 결제 비범위).
+export const ORDER_MODES = ["ai", "human"] as const;
+export const OrderModeSchema = z.enum(ORDER_MODES);
+export type OrderMode = (typeof ORDER_MODES)[number];
+
+// ── 캐노니컬 가격표 (단일 소스, 원) ──
+// calcAmount가 위변조 방어의 기준으로 삼는 유일한 금액 출처. UI 표시도 이 값을 import해 렌더.
+export const PRICE = {
+  BASE: 10000, // 신규 제작 기본(첫 페이지)
+  ADDITIONAL_PAGE: 10000, // 페이지 1개 추가당
+  AI_REVISION: 50000, // 추가 제작(재생성) 정액
+  HUMAN: 300000, // 사람과 함께(채팅 상담 — 온라인 결제 비범위, 참고용)
+} as const;
+
+// 금액 계산 입력 — 서버 calcAmount와 web 표시가 공유하는 최소 필드.
+export const OrderPricingInputSchema = z.object({
+  mode: OrderModeSchema,
+  orderType: OrderTypeSchema,
+  pageCount: z.number().int().min(1), // 선택한 페이지 수(기본 1)
+});
+export type OrderPricingInput = z.infer<typeof OrderPricingInputSchema>;
+
+// POST /api/orders 요청 — orderSnapshot은 주문서 전체(목 OrderForm 승격본).
+export const OrderCreateSchema = z.object({
+  showcaseId: z.string().optional(), // 쇼케이스 선택 주문이면 slug
+  mode: OrderModeSchema,
+  orderType: OrderTypeSchema,
+  pageCount: z.number().int().min(1),
+  orderName: z.string().min(1), // 결제창 표시명
+  orderSnapshot: z.unknown(), // 주문서 스냅샷(검증은 web Zod, 저장은 Json)
+});
+export type OrderCreate = z.infer<typeof OrderCreateSchema>;
+
+// POST /api/orders 응답 — 브라우저 결제창 입력값. 금액은 항상 서버 계산값.
+export const OrderCreatedSchema = z.object({
+  orderId: z.string(),
+  paymentId: z.string(),
+  amount: z.number().int(),
+  orderName: z.string(),
+});
+export type OrderCreated = z.infer<typeof OrderCreatedSchema>;
+
+// 마이페이지 주문/결제 요약 — 민감정보(PG raw, paymentId) 비노출.
+export const OrderSummarySchema = z.object({
+  id: z.string(),
+  orderName: z.string(),
+  amount: z.number().int(),
+  status: OrderStatusSchema,
+  paidAt: z.string().nullable(), // ISO 8601
+  step: z.number().int(), // 진행 단계 1~4 (status/generatedJobId에서 도출)
+  generatedJobId: z.string().nullable(),
+  createdAt: z.string(), // ISO 8601
+});
+export type OrderSummary = z.infer<typeof OrderSummarySchema>;
+
+export const RefundRequestSchema = z.object({
+  reason: z.string().min(1, "환불 사유를 입력해 주세요.").max(200),
+});
+export type RefundRequest = z.infer<typeof RefundRequestSchema>;

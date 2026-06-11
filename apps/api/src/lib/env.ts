@@ -24,6 +24,11 @@ const EnvSchema = z.object({
     .default("false")
     .transform((v) => v === "true"),
   SESSION_TTL_DAYS: z.coerce.number().default(7),
+  // ── 결제 (PortOne) ──
+  // 미설정 시 gateway null + 부팅 경고 + 결제 버튼 비활성.
+  PORTONE_API_SECRET: z.string().optional(), // V2 API 시크릿(서버 전용)
+  PORTONE_STORE_ID: z.string().optional(), // 상점 ID
+  PORTONE_WEBHOOK_SECRET: z.string().optional(), // 웹훅 서명검증 시크릿
 });
 
 export const env = EnvSchema.parse(process.env);
