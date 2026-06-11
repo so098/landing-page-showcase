@@ -122,27 +122,31 @@
 
 ---
 
-## 4순위: 카카오 OAuth 로그인 (진짜 인증)
+## 4순위: 구글/카카오 OAuth 로그인 (진짜 인증) — ✅ 구현 완료 (2026-06-11)
 
 > 인증 흐름(OAuth 리다이렉트, 토큰, 쿠키, 세션 유지)은 프론트 면접 단골 주제.
+> 설계: `docs/superpowers/specs/2026-06-11-oauth-google-kakao-login-design.md`
+> 외부 설정: `docs/auth/oauth-setup.md`. NextAuth 없이 Authorization Code 흐름 직접 구현.
+> 세션은 JWT 대신 **DB 세션(Postgres) + httpOnly 쿠키**(서버 즉시 무효화 가능)로 결정.
 
 **작업**
 
-- [ ] 카카오 개발자 콘솔 앱 등록 + 키 발급 **(사람이 직접)**
-- [ ] api: `User` 모델 + `GET /api/auth/kakao` → callback → JWT(httpOnly 쿠키) + `/api/auth/me`
-- [ ] web: 목 로그인(localStorage) → 실제 OAuth + 쿠키 기반으로 교체
-- [ ] 채팅 visitorId ↔ userId 연결, 마이페이지 실데이터화
-- [ ] /admin/chat 관리자 보호
+- [ ] 구글/카카오 개발자 콘솔 앱 등록 + 키 발급 **(사람이 직접 — `docs/auth/oauth-setup.md`)**
+- [x] api: `User`/`Session` 모델 + `GET /api/auth/:provider` → callback → DB 세션(httpOnly 쿠키) + `/api/auth/me` + `/logout` + `/providers`. provider 추상화(google/kakao) + 세션 미들웨어.
+- [x] web: 목 로그인(localStorage) → 실제 OAuth + 쿠키(`credentials: include`) 기반으로 교체. `startLogin`/`logout`/`getUser`. 미설정 provider 버튼 비활성.
+- [x] 채팅 visitorName을 로그인 유저 이름으로 연결(`chat.ts`), 마이페이지 유저명 실데이터화. (마이페이지 결제내역은 5순위 결제 연동에서 실데이터화)
+- [ ] /admin/chat 관리자 보호 (이 단계 비범위 — RBAC는 추후)
 
 **테스트 (이 단계에 포함)**
 
-- [ ] api: auth 라우트 테스트 (me/logout, 토큰 검증, 비로그인 401)
-- [ ] web: 로그인 상태별 헤더/마이페이지 렌더 RTL 테스트
-- [ ] Playwright: 비로그인 → 마이페이지 접근 → 로그인 유도 흐름
+- [x] api: auth 라우트 테스트 (fake provider 주입 — 콜백/세션쿠키/CSRF/me/logout/비로그인 401)
+- [x] api: auth 서비스 테스트 (upsert 신규·기존, 세션 생성/만료/폐기)
+- [x] web: 로그인 상태별 헤더/마이페이지 렌더 RTL + `lib/auth` /me·logout 전이 테스트
+- [ ] Playwright: 비로그인 → 마이페이지 접근 → 로그인 유도 흐름 (실연동은 수동 스모크로 대체)
 
-**사람이 확인할 것**
+**사람이 확인할 것 (키 발급 후 수동 스모크 — `docs/auth/oauth-setup.md`)**
 
-1. 실제 내 카카오 계정으로 로그인 → 프로필 이름 표시 → 새로고침 유지 → 로그아웃
+1. 실제 구글/카카오 계정으로 로그인 → 프로필 이름 표시 → 새로고침 유지 → 로그아웃
 
 ---
 

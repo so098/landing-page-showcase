@@ -52,6 +52,22 @@ export const ReviewCreateSchema = z.object({
 });
 export type ReviewCreate = z.infer<typeof ReviewCreateSchema>;
 
+// ── 인증 (구글/카카오 OAuth) ──
+
+export const OAUTH_PROVIDERS = ["google", "kakao"] as const;
+export const OAuthProviderSchema = z.enum(OAUTH_PROVIDERS);
+export type OAuthProviderName = (typeof OAUTH_PROVIDERS)[number];
+
+// web↔api 계약. 민감정보(providerId, 세션 ID)는 노출하지 않는다.
+export const AuthUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().nullable(),
+  avatarUrl: z.string().nullable(),
+  provider: OAuthProviderSchema,
+});
+export type AuthUser = z.infer<typeof AuthUserSchema>;
+
 // ── ④ 실시간 채팅 ──
 
 export const SENDER_TYPES = ["CUSTOMER", "ADMIN"] as const;

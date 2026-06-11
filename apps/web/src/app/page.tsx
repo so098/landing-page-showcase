@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import type { Category, Showcase, Review } from "@melstudio/shared";
 import { fetchCategories, fetchShowcases, fetchReviews } from "@/lib/api";
 import { buildMetadata } from "@/lib/metadata";
+import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import HomeShowcaseSection from "@/components/HomeShowcaseSection";
 import ReviewSection from "@/components/ReviewSection";
+import AuthErrorToast from "@/components/AuthErrorToast";
 import { REVIEW_PAGE_SIZE } from "@/lib/reviews";
 
 // 홈은 사이트 기본 제목/설명을 그대로 쓰되, canonical("/")과 OG를 명시한다.
@@ -58,6 +60,11 @@ export default async function Home() {
     <div className="min-h-screen bg-white text-ink">
       {/* ── 헤더 ── */}
       <SiteHeader />
+
+      {/* OAuth 실패 시 ?error= 쿼리를 토스트로 안내 (useSearchParams → Suspense 필요) */}
+      <Suspense fallback={null}>
+        <AuthErrorToast />
+      </Suspense>
 
       {/* ── 히어로 (서버 렌더 — 데이터가 HTML에 포함됨) ── */}
       <section className="bg-white px-5 pb-16 pt-14 text-center sm:pb-20 sm:pt-20">
