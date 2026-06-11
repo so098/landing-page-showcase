@@ -43,6 +43,7 @@ model User {
   name       String
   avatarUrl  String?
   sessions   Session[]
+  orders     Order[]
   createdAt  DateTime  @default(now())
 
   @@unique([provider, providerId])
@@ -57,6 +58,42 @@ model Session {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ── ⑤ 주문 / 결제 (PortOne) ──
+// 금액·확정 판단은 서버가 전담. paymentId(@unique)가 멱등 키 겸 PG 결제 식별자.
+
+model Order {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showcaseId     String? // 쇼케이스 선택 주문이면 slug
+  orderSnapshot  Json // 주문서 전체 스냅샷(목 orderStorage 승격본)
+  orderName      String // 결제창 표시명
+  amount         Int // 서버가 계산한 확정 금액(원) — 위변조 비교 기준
+  status         String // PENDING | PAID | FAILED | REFUNDED
+  paymentId      String    @unique // PG에 넘기는 고유 결제 ID(멱등 키 겸용)
+  payment        Payment?
+  generatedJobId String? // 결제 확정 후 생성된 GeneratedPage.jobId 연결
+  createdAt      DateTime  @default(now())
+  paidAt         DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  pgPaymentId String // PG 측 결제 식별자
+  method      String? // card | kakaopay | naverpay ... (PG 응답)
+  amount      Int
+  status      String // PAID | CANCELLED
+  rawPayload  Json? // PG 단건조회 원문(감사/디버깅용)
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
 }
 
 // ── 홈 리뷰 ──

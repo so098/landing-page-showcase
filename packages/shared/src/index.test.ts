@@ -7,6 +7,10 @@ import {
   ReviewSchema,
   ReviewListSchema,
   ReviewCreateSchema,
+  OrderCreateSchema,
+  OrderSummarySchema,
+  RefundRequestSchema,
+  PRICE,
 } from "./index";
 
 describe("shared schemas", () => {
@@ -84,5 +88,58 @@ describe("review schemas", () => {
     expect(() =>
       ReviewCreateSchema.parse({ authorName: "김민수", body: "짧아요" }),
     ).toThrow();
+  });
+
+  // ── 주문 / 결제 ──
+  it("PRICE: 가격표 상수가 확정값을 가진다", () => {
+    expect(PRICE).toEqual({
+      BASE: 10000,
+      ADDITIONAL_PAGE: 10000,
+      AI_REVISION: 50000,
+      HUMAN: 300000,
+    });
+  });
+
+  it("OrderCreate: 유효한 주문 생성 요청을 통과시킨다", () => {
+    const ok = OrderCreateSchema.parse({
+      mode: "ai",
+      orderType: "new",
+      pageCount: 2,
+      orderName: "달콤 베이커리 랜딩페이지",
+      orderSnapshot: { businessName: "달콤" },
+    });
+    expect(ok.pageCount).toBe(2);
+    expect(ok.mode).toBe("ai");
+  });
+
+  it("OrderCreate: pageCount가 0이면 거부한다", () => {
+    expect(() =>
+      OrderCreateSchema.parse({
+        mode: "ai",
+        orderType: "new",
+        pageCount: 0,
+        orderName: "x",
+        orderSnapshot: {},
+      }),
+    ).toThrow();
+  });
+
+  it("OrderSummary: 잘못된 status는 거부한다", () => {
+    expect(() =>
+      OrderSummarySchema.parse({
+        id: "o1",
+        orderName: "x",
+        amount: 10000,
+        status: "WEIRD",
+        paidAt: null,
+        step: 1,
+        generatedJobId: null,
+        createdAt: "2026-06-11T00:00:00.000Z",
+      }),
+    ).toThrow();
+  });
+
+  it("RefundRequest: 사유가 비면 거부한다", () => {
+    expect(() => RefundRequestSchema.parse({ reason: "" })).toThrow();
   });
 });

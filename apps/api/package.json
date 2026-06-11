@@ -20,6 +20,7 @@
     "@aws-sdk/client-s3": "^3.1062.0",
     "@melstudio/ai-landing": "*",
     "@melstudio/shared": "*",
+    "@portone/server-sdk": "^0.19.0",
     "@prisma/client": "^5.22.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
