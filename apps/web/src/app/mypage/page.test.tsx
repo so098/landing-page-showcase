@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { AuthUser } from "@melstudio/shared";
 
 // submitReview Server Action을 가짜로 대체 — jsdom에서 실제 네트워크/캐시 무효화를 피한다.
 // 기본은 성공 응답. 개별 테스트에서 mockImplementation으로 바꿀 수 있다.
@@ -9,17 +10,28 @@ vi.mock("@/app/actions/reviews", () => ({
   submitReview: (...args: unknown[]) => submitReviewMock(...(args as [])),
 }));
 
+// 인증 스토어를 가짜로 대체 — getUser()가 로그인 유저를 반환하도록 한다.
+// (실제 /me fetch는 auth.test.ts에서 검증)
+const mockUser: AuthUser = {
+  id: "u1",
+  name: "김민수",
+  email: "kim@example.com",
+  avatarUrl: null,
+  provider: "google",
+};
+vi.mock("@/lib/auth", () => ({
+  getUser: () => mockUser,
+  subscribe: () => () => {},
+  startLogin: vi.fn(),
+  getEnabledProviders: async () => ["google", "kakao"],
+}));
+
 import MyPage from "./page";
-import { login, logout } from "@/lib/auth";
 
 describe("MyPage 리뷰 작성", () => {
   beforeEach(() => {
     submitReviewMock.mockClear();
     submitReviewMock.mockImplementation(async () => ({ ok: true }));
-    login("김민수");
-  });
-  afterEach(() => {
-    logout();
   });
 
   it("완료된 주문 카드에만 리뷰 작성 버튼을 노출한다", async () => {

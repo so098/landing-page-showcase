@@ -12,10 +12,12 @@ export default function Toast({
   message,
   duration = 3000,
   onDismiss,
+  tone = "success",
 }: {
   message: string;
   duration?: number; // ms, 자동 닫힘까지
   onDismiss: () => void;
+  tone?: "success" | "error"; // 아이콘/색만 바뀐다 (성공=체크, 실패=느낌표)
 }) {
   useEffect(() => {
     const timer = setTimeout(onDismiss, duration);
@@ -29,11 +31,22 @@ export default function Toast({
         aria-live="polite"
         className="animate-slide-in pointer-events-auto flex items-center gap-3 rounded-full border border-white/40 bg-ink/95 px-5 py-3 text-sm font-semibold text-white shadow-petalHover backdrop-blur"
       >
-        {/* 체크 아이콘 */}
-        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-grad">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6L9 17l-5-5" />
-          </svg>
+        {/* 상태 아이콘 — 성공: 체크 / 실패: 느낌표 */}
+        <span
+          className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${
+            tone === "error" ? "bg-red-500" : "bg-accent-grad"
+          }`}
+        >
+          {tone === "error" ? (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 7v6" />
+              <path d="M12 17h.01" />
+            </svg>
+          ) : (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          )}
         </span>
         {message}
         <button

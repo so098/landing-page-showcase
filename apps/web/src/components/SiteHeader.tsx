@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getUser, login, logout, subscribe, type User } from "@/lib/auth";
+import {
+  getUser,
+  startLogin,
+  logout,
+  subscribe,
+  getEnabledProviders,
+  type User,
+} from "@/lib/auth";
+import type { OAuthProviderName } from "@melstudio/shared";
 
 export default function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [enabled, setEnabled] = useState<OAuthProviderName[]>([]);
 
   // 로그인 상태 구독 (마운트 후에만 읽어 hydration 불일치 방지)
   useEffect(() => {
@@ -15,6 +24,18 @@ export default function SiteHeader() {
     setMounted(true);
     return subscribe(() => setUser(getUser()));
   }, []);
+
+  // 로그인 모달을 열 때 설정된 provider 목록을 조회해 버튼 활성/비활성을 결정한다.
+  useEffect(() => {
+    if (!showLogin) return;
+    let active = true;
+    getEnabledProviders().then((p) => {
+      if (active) setEnabled(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, [showLogin]);
 
   // 로그인 모달 ESC 닫기 + 스크롤 잠금
   useEffect(() => {
@@ -30,12 +51,6 @@ export default function SiteHeader() {
       document.body.style.overflow = prev;
     };
   }, [showLogin]);
-
-  // 목 로그인 — 어떤 소셜이든 이름 "사장님"으로 처리하고 모달 닫기
-  function handleMockLogin() {
-    login("사장님");
-    setShowLogin(false);
-  }
 
   return (
     <>
@@ -126,22 +141,24 @@ export default function SiteHeader() {
             </p>
 
             <div className="mt-7 flex flex-col gap-3">
-              {/* 카카오 */}
+              {/* 카카오 — 미설정이면 비활성 */}
               <button
                 type="button"
-                onClick={handleMockLogin}
-                className="flex w-full items-center justify-center gap-2.5 rounded-full bg-[#FEE500] px-6 py-3.5 text-sm font-semibold text-[#191600] transition-transform active:scale-95"
+                onClick={() => startLogin("kakao")}
+                disabled={!enabled.includes("kakao")}
+                className="flex w-full items-center justify-center gap-2.5 rounded-full bg-[#FEE500] px-6 py-3.5 text-sm font-semibold text-[#191600] transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6-.2.7-.7 2.6-.8 3-.1.5.2.5.4.4.2-.1 2.6-1.8 3.7-2.5.6.1 1.3.1 2 .1 5.5 0 10-3.5 10-7.8C22 6.5 17.5 3 12 3z" />
                 </svg>
                 카카오로 시작하기
               </button>
-              {/* 구글 */}
+              {/* 구글 — 미설정이면 비활성 */}
               <button
                 type="button"
-                onClick={handleMockLogin}
-                className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-white px-6 py-3.5 text-sm font-semibold text-ink transition-transform active:scale-95"
+                onClick={() => startLogin("google")}
+                disabled={!enabled.includes("google")}
+                className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-white px-6 py-3.5 text-sm font-semibold text-ink transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.7-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z" />
@@ -154,7 +171,9 @@ export default function SiteHeader() {
             </div>
 
             <p className="mt-6 text-[11px] leading-relaxed tracking-[-0.08px] text-ink-muted/45">
-              지금은 데모 단계예요. 어떤 버튼을 눌러도 체험용 계정으로 로그인됩니다.
+              {enabled.length === 0
+                ? "소셜 로그인 준비 중이에요. 잠시 후 다시 시도해 주세요."
+                : "로그인 시 이름과 이메일을 받아 계정을 만듭니다."}
             </p>
 
             <button

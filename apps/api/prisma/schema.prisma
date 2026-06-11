@@ -32,6 +32,33 @@ model Showcase {
   @@index([categoryId])
 }
 
+// ── 인증 (구글/카카오 OAuth) ──
+// 시크릿/공급자 access_token은 보관하지 않는다. 프로필 1회 조회 후 자체 DB 세션으로만 관리.
+
+model User {
+  id         String    @id @default(cuid())
+  provider   String // google | kakao
+  providerId String // 공급자 측 고유 ID
+  email      String?
+  name       String
+  avatarUrl  String?
+  sessions   Session[]
+  createdAt  DateTime  @default(now())
+
+  @@unique([provider, providerId])
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
 // ── 홈 리뷰 ──
 
 model Review {

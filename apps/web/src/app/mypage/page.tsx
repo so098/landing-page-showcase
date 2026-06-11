@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import ReviewModal from "@/components/ReviewModal";
 import Toast from "@/components/Toast";
-import { getUser, login, subscribe, type User } from "@/lib/auth";
+import { getUser, startLogin, subscribe, getEnabledProviders, type User } from "@/lib/auth";
+import type { OAuthProviderName } from "@melstudio/shared";
 
 // 진행 단계 정의 — 주문 접수 → AI 생성 완료 → 호스팅/도메인 연결 → 사이트 오픈
 const STEPS = ["주문 접수", "AI 생성 완료", "호스팅·도메인 연결 중", "사이트 오픈 완료"] as const;
@@ -66,6 +67,19 @@ export default function MyPage() {
 
 /* ── 비로그인 상태 ── */
 function LoggedOut() {
+  const [enabled, setEnabled] = useState<OAuthProviderName[]>([]);
+
+  // 설정된 provider 목록 조회 → 미설정 버튼 비활성.
+  useEffect(() => {
+    let active = true;
+    getEnabledProviders().then((p) => {
+      if (active) setEnabled(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="py-24 text-center animate-fade-up">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-divider/60 text-accent">
@@ -81,16 +95,29 @@ function LoggedOut() {
         로그인하면 결제한 웹페이지와 제작 진행 상황을
         <br className="hidden sm:block" /> 한눈에 확인할 수 있어요.
       </p>
-      <button
-        type="button"
-        onClick={() => login("사장님")}
-        className="mt-7 inline-block rounded-full bg-accent-grad px-7 py-3.5 text-sm font-bold text-white shadow-petal transition-all hover:shadow-petalHover hover:brightness-105"
-      >
-        로그인하고 시작하기
-      </button>
-      <p className="mt-4 text-[11px] text-ink-muted/40">
-        지금은 데모 단계예요. 버튼을 누르면 체험용 계정으로 로그인됩니다.
-      </p>
+      <div className="mx-auto mt-7 flex max-w-xs flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => startLogin("kakao")}
+          disabled={!enabled.includes("kakao")}
+          className="rounded-full bg-[#FEE500] px-7 py-3.5 text-sm font-bold text-[#191600] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
+        >
+          카카오로 시작하기
+        </button>
+        <button
+          type="button"
+          onClick={() => startLogin("google")}
+          disabled={!enabled.includes("google")}
+          className="rounded-full border border-hairline bg-white px-7 py-3.5 text-sm font-bold text-ink transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
+        >
+          구글로 시작하기
+        </button>
+      </div>
+      {enabled.length === 0 && (
+        <p className="mt-4 text-[11px] text-ink-muted/40">
+          소셜 로그인 준비 중이에요. 잠시 후 다시 시도해 주세요.
+        </p>
+      )}
     </div>
   );
 }
